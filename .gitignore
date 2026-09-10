@@ -1,0 +1,10 @@
+# Rendered output (build it with the GitHub Action, don't commit it)
+*.pdf
+
+# Editor / OS cruft
+.DS_Store
+# The macOS custom-folder-icon file is named "Icon" followed by a carriage
+# return, so this pattern must end with two \r (git eats the last one).
+# Careful: some editors strip trailing CRs on save.
+Icon
+.vscode/
