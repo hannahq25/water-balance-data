@@ -1,17 +1,17 @@
 #import "@preview/charged-ieee:0.1.4": ieee
 
 #show: ieee.with(
-  title: [Report Template],
+  title: [Analysis of Daily Historical Water Balance Products for the Continental US],
   abstract: [
     This is where you put your abstract. Abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract.
   ],
   authors: (
     (
-      name: "Author 1",
-      department: [Department 1],
+      name: "Hannah Qian",
+      department: [Civil & Environmental Engineering],
       organization: [University of Illinois Urbana-Champaign],
       location: [Urbana, IL, USA],
-      email: "author1@illinois.edu",
+      email: "si25@illinois.edu",
     ),
     (
       name: "Author 2",
@@ -19,6 +19,20 @@
       organization: [University of Illinois Urbana-Champaign],
       location: [Urbana, IL, USA],
       email: "author2@illinois.edu",
+    ),
+    (
+      name: "Author 3",
+      department: [Department 3],
+      organization: [University of Illinois Urbana-Champaign],
+      location: [Urbana, IL, USA],
+      email: "author3@illinois.edu",
+    ),
+    (
+      name: "Author 4",
+      department: [Department 4],
+      organization: [University of Illinois Urbana-Champaign],
+      location: [Urbana, IL, USA],
+      email: "author4@illinois.edu",
     ),
   ),
   index-terms: ("Optional", "Keywords", "Here"),
