@@ -14,11 +14,11 @@
       email: "si25@illinois.edu",
     ),
     (
-      name: "Author 2",
-      department: [Department 2],
+      name: "Amy Bergbreiter  ",
+      department: [CEE],
       organization: [University of Illinois Urbana-Champaign],
       location: [Urbana, IL, USA],
-      email: "author2@illinois.edu",
+      email: "ameliab9@illinois.edu",
     ),
     (
       name: "Author 3",
