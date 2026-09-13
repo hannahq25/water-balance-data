@@ -21,11 +21,11 @@
       email: "ameliab9@illinois.edu",
     ),
     (
-      name: "Author 3",
-      department: [Department 3],
+      name: "Tzina Santos",
+      department: [CEE],
       organization: [University of Illinois Urbana-Champaign],
-      location: [Urbana, IL, USA],
-      email: "author3@illinois.edu",
+      location: [Bacoor, Cavite, Philippines],
+      email: "tsantos3@illinois.edu",
     ),
     (
       name: "Author 4",
