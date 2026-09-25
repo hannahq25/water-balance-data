@@ -1,10 +1,10 @@
 #import "@preview/charged-ieee:0.1.4": ieee
 
 #show: ieee.with(
-  title: [Analysis of Daily Historical Water Balance Products for the Continental US],
-  abstract: [
-    This is where you put your abstract. Abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract abstract.
-  ],
+  title: [Impacts of Climate Change and Urbanization on Water Runoff],
+  // abstract: [
+  //   This is where you put your abstract.
+  // ],
   authors: (
     (
       name: "Hannah Qian",
@@ -38,34 +38,78 @@
   index-terms: ("Optional", "Keywords", "Here"),
   bibliography: bibliography("refs.bib"),
 )
+#show link: underline
+#show raw: set text(font: "DejaVu Sans Mono", size: 0.8em)
 
-= Background
+// = Background
+= Data Sources
+== Daily Historical Water Balance Products for the CONUS:
+ A gridded daily historical water balance dataset covering the Continental United States (historic water balance data) @Tercek2023. The dataset was originally developed under the National Park Service Inventory and Monitoring Program and the National Park Service Climate Change Response Program. Version 1.5, the version currently available online, provides daily historic data (1980–2024) on #link("https://search.earthdata.nasa.gov/search?q=C2674700048-LPCLOUD")[NASA's Earthdata database] or an #link("https://npwbanalres.s3.us-west-2.amazonaws.com/index.html")[Amazon S3 bucket]. @HistBalanceData
 
-This project will evaluate a gridded water balance dataset originally developed using funding by the National Park Service Inventory and Monitoring Program and the National Park Service Climate Change Response Program. Version 1.5, which is the version currently available online, was developed from daily meteorological data available from GridMET (#link("http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_MET_catalog.html")).  
+== Future NPS Gridded Water Balance Model
+ Future conditions of the aforementioned water balance dataset are available as 30-year averages (2040–2069 and 2070–2099, under both RCP 4.5 and RCP 8.5 emissions scenarios) for an assortment of climate models from a second S3 bucket @FutureBalanceData. Many references cite a THREDDS server for this data; however, that server is no longer valid.
 
-Inputs:
--Daily minimum and maximum temperature (from GridMET)
--Daily precipitation (from GridMET)
+== Annual National Land Cover Database Collection 1.2 
+ A database by the USGS that applies geospatial deep learning algorithms to the Landsat satellite imagery record to classify land cover and surface change characteristics across the conterminous US an on annual basis, beginning in 1985. The Land Cover Classification and Fractional Impervious Surface products will be most relevant to this project. The data is available to view and download through multiple platforms, including the MRLC Web Viewer @MRLCViewer.
 
-Output: 
--Daily rainwater (rain) in mmper 1km square grid cell.  This is a daily value.
--Accumulated snow water equivalent(accumswe).  Any precip not captured as rain is accumulated in this variable in units of mm per 1 km square grid cell until temperature results in the snow melting. The decision on whether precipitation is rain or snow is based on the temperature data (maybe add more details here).  This an accumulated value over time.
--The amount of water in the soil (soilwater).  The model treats the soil as a "bucket" and assumes a maximum capacitybased on the SSURGO soil database.  This is the amount, in mm, in the bucket at a specific time. Water is added from the rain variable and removed by evaporation and transpiration (the AET variable discussed below).  This value is accumulated over time.
--The amount of rainwater that is cannot be captured in the soil bucket and is therefore lost as runoff (runoff). This variable like the others is captured in mm per 1 km square grid cell.  Similar to rainfall, this is a daily value and there is no accumulation of this variable over time
--Potential evaporation and transpiration (pet).  This is the maximum amount of evaporation and transpiration that would occur if soilwater variable was unlimited.  This variable is driven by temperature, wind, solar radiation and cloudiness and a variety of other factors affect PET (would be good to add more details on this one).  Captured in mm per 1 km square per day.  This is a daily value.
--Actual evaporation and transpiration (aet). Actual evaporation and transpiration is the amount of water that is actually removed from the soilwater bucket and is the minimum of the pet and soilwater variables.  Captured in mm per 1 km square per day.  This is a daily value. 
-- Deficit (deficit).  This is the difference between the pet and aet variables and is captured in mm per 1 km square per day.  So if the vegetation and climatic parameters could support more evaporation and transpiration, this would be greater than zero.  Otherwise the value is 0.  Captured in mm per 1 km square per day. This is a daily value.
+== U.S. Climate Resilience Toolkit Climate Explorer
+ A tool built by the EPA, NASA, NOAA, and USGS and hosted by the National Environmental Modeling and Analysis Center (NEMAC) at the University of North Carolina Asheville. The tool provides interactive graphs and maps of historical and projected climate conditions for localities across the US. Historical observations were recorded at weather and climate stations. Projections are generated from global climate models for the Coupled Model Intercomparison Project Phase 5 (CMIP5) for the RCP 4.5 and RCP 8.5 emissions scenarios. Annual, locality-specific data can be downloaded through the online Climate Explorer tool @ClimateExplorer. 
 
-All of the data is stored in daily time steps in the time variable.  The data is projected into a lambert conformal conic (lcc) projection (similar to the daymet data) and each cell has a lcc  x and y as well as a lat and lon variable. The dataset is gridded over the entire continental US. 
+== GridMET 
+ Daily gridded meteorological data at about 4 km resolution @abatzoglou2013 @GridMETwebsite. It is the same precipitation and temperature forcing used by the water balance model. Using it for the curve number calculation keeps the two runoff estimates directly comparable. 
+
+== SSURGO (Soil Survey Geographic Database) 
+ The USDA NRCS soil database provides hydrologic soil groups (A–D), which are combined with land cover to assign curve numbers. 
+
+= Data Formats and Contents
+== Daily Historical Water Balance Products for the CONUS 
+
+The historical water balance data is available in Network Common Data Form (netCDF) format. NetCDF files contain variables distributed across common dimensions, and attributes of each variable, which allow a single file to store variables across both spatial and time dimensions.   
+
+The data are gridded over the entire continental US in 1 km cells, stored in daily time steps (`time` variable). It is projected in a Lambert Conformal Conic (LCC) projection, and each cell has LCC x and y coordinate.  The degree latitude/longitude is also stored as variables across the x/y dimensions. 
+
+Version 1.5 of the water balance dataset was developed from daily meteorological data from GridMET: daily minimum and maximum temperature and daily precipitation. The model treats the soil as a "bucket" with a maximum capacity based on the USDA’s SSURGO soil database Available Water Storage paramater. Precipitation is classified as rain or snow based on temperature, adjusted for relative humidity (Jennings et al., 2018). Potential evapotranspiration is calculated with the Oudin method, which uses temperature and latitude-based solar radiation (Oudin et al., 2005). 
+
+#figure(
+  caption: [Historial Water Balance Variables],
+  table(
+    columns: (auto, auto, auto, auto),
+    align: (center, left, center, center),
+    table.header([*Variable*], [*Description*], [*Units*], [*Type*]),
+    `rain`, "Daily rainwater", "mm/day", "Daily",
+
+    `accumswe`, "Accumulated snow water equivalent. Precipitation not falling as rain accumulates here until temperatures cause the snow to melt.", "mm", "Accumulated",
 
 
-Note many references cite a thredds server for the water balance data, however that server is no longer valid.  
+    `soilwater`, "Water in the soil \"bucket\" at a given time. Added by rain and snowmelt, removed by evaporation and transpiration (" + `aet` + ").", "mm", "Accumulated",
 
-== Historic Water Balance Data (1980-2024)
- Version 1.5 of the Daily Historic Data (1980-2024) on NASA's Earthdata Database #link("https://search.earthdata.nasa.gov/search?q=C2674700048-LPCLOUD") or an Amazon S3 bucket #link("https://npwbanalres.s3.us-west-2.amazonaws.com/index.html")
+    `runoff`, "Rain and snowmelt that cannot be captured in the soil bucket and is lost as runoff", "mm/day", "Daily",
 
-== Future Conditions (2040-2069 and 2070-2099)
-  Future conditions are availalble in 30-year averages (2040-2069 and 2070-2099for both RCP 4.5 and RCP 8.5 scenarios) from #link("https://screenedcleanedsummaries.s3.us-west-2.amazonaws.com/index.html").  Results from an assortment of climate models are available in this future conditions folder under both emissions scenarios. 
+    `pet`, "Potential evaporation and transpiration: the maximum that would occur if soil water were unlimited", "mm/day", "Daily",
+
+    `aet`, "Actual evaporation and transpiration: the water actually removed from the soil bucket, limited by soil water", "mm/day", "Daily",
+
+    `deficit`, "Difference between "+`pet`+" and "+ `aet`+". Greater than zero when climate and vegetation could support more evaporation and transpiration than the soil can supply; otherwise 0.", "mm/day", "Daily"
+  ),
+  
+)
+
+== Future NPS Gridded Water Balance Model
+
+== Annual National Land Cover Database Collection 1.2 
+@NLCDUserGuide
+
+== U.S. Climate Resilience Toolkit Climate Explorer 
+
+== GridMET 
+
+== SSURGO (Soil Survey Geographic Database) 
+
+= Project Proposal
+
+
+/* REMOVE THIS LINE TO UNCOMMENT THE REST OF THE DOCUMENT
+
 === First Subsubsection
 
 You can make sub, sub-sub, and sub-sub-sub sections by adding `=` signs in front of the section title. There needs to be a space between the last `=` sign and the title text.
