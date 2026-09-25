@@ -191,6 +191,11 @@ The SSURGO Data has two linked parts: (1) the spatial part as vector polygons (s
 
 Static spatial data describes soil properties as mapped, with no time dimension. Mapping scales are typically 1:12,000 to 1:24,000, much finer than the other datasets. Each polygon is a map unit identified by a key (`mukey`). A map unit can contain several soil components, each with its own properties and share of the area. The tables are linked by keys: `mapunit` → `component` → `chorizon` (the soil layers). For this project, the key field is the hydrologic soil group (A, B, C, D, or dual groups like A/D), which ranks soils by how easily water infiltrates. The muaggatt table has a ready-made dominant hydrologic group per map unit (`hydgrpdcd`). Combined with NLCD land cover, it sets the curve number. 
 
+== USGS Water Data for the Nation (formerly NWIS) 
+The Water Data for the Nation dataset is a tabular time series, downloadable as CSV, tab-delimited text, or JSON. This can be obtained from the Water Data for the Nation website or programmatically with the USGS dataretrieval Python package. The dataset provides point data measured at one gage location as a daily time series, with many gages having records going back decades. 
+
+Each gage has a site number and metadata including location and drainage area. Data are organized by parameter code: discharge is 00060, in cubic feet per second, and daily mean values use statistic code 00003. Each value carries a qualification code: A (approved, reviewed by USGS), P (provisional, may be revised), or e (estimated). Recent data are often still provisional, so the analysis should mainly use approved values. 
+
 = Project Proposal
 
 This project will compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will analyze the precipitation, evapotranspiration, soil infiltration, and temperature to understand the impacts these parameters have on runoff and to determine how changes in surface and climate conditions could impact the balance of water within the ecosystem.  
