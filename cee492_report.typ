@@ -205,4 +205,5 @@ The project will evaluate impacts in urbanization by combining the NLCD land cov
 Both estimates will be validated against gage discharge converted to runoff depth. If observed streamflow and CN runoff both increase over time while the water balance runoff does not, the increase can be attributed to urbanization rather than climate as long as climate-driven storm intensity is not a factor. 
 
 A machine learning model will be used as a predictive element using land cover, impervious fraction, precipitation, temperature and the water balance model’s outputs to predict observed runoff. The model will then predict runoff under four cases: historical land cover with historical climate (baseline), future land cover with historical climate, and historical land cover  with projected RCP 4.5 and RCP 8.5 climate, with future land cover with projected RCP 4.5 and RCP 8.5 climate. Future land cover may be extrapolated from Annual NLCD trends. Comparing these results with the future water balance projections will show how much future runoff depends on urbanization versus climate. 
- 
+ = Exploratory Data Analysis
+ = Predictive Modeling 
