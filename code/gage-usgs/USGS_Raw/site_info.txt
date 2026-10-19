@@ -1,0 +1,75 @@
+#
+#
+# US Geological Survey
+# retrieved: 2026-10-16 10:24:37 -04:00	(caas01)
+#
+# The Site File stores location and general information about groundwater,
+# surface water, and meteorological sites
+# for sites in USA.
+#
+# File-format description:  http://help.waterdata.usgs.gov/faq/about-tab-delimited-output
+# Automated-retrieval info: http://waterservices.usgs.gov/rest/Site-Service.html
+#
+# Contact:   gs-w_support_nwisweb@usgs.gov
+#
+# The following selected fields are included in this output:
+#
+#  agency_cd       -- Agency
+#  site_no         -- Site identification number
+#  station_nm      -- Site name
+#  site_tp_cd      -- Site type
+#  lat_va          -- DMS latitude
+#  long_va         -- DMS longitude
+#  dec_lat_va      -- Decimal latitude
+#  dec_long_va     -- Decimal longitude
+#  coord_meth_cd   -- Latitude-longitude method
+#  coord_acy_cd    -- Latitude-longitude accuracy
+#  coord_datum_cd  -- Latitude-longitude datum
+#  dec_coord_datum_cd -- Decimal Latitude-longitude datum
+#  district_cd     -- District code
+#  state_cd        -- State code
+#  county_cd       -- County code
+#  country_cd      -- Country code
+#  land_net_ds     -- Land net location description
+#  map_nm          -- Name of location map
+#  map_scale_fc    -- Scale of location map
+#  alt_va          -- Altitude of Gage/land surface
+#  alt_meth_cd     -- Method altitude determined
+#  alt_acy_va      -- Altitude accuracy
+#  alt_datum_cd    -- Altitude datum
+#  huc_cd          -- Hydrologic unit code
+#  basin_cd        -- Drainage basin code
+#  topo_cd         -- Topographic setting code
+#  instruments_cd  -- Flags for instruments at site
+#  construction_dt -- Date of first construction
+#  inventory_dt    -- Date site established or inventoried
+#  drain_area_va   -- Drainage area
+#  contrib_drain_area_va -- Contributing drainage area
+#  tz_cd           -- Time Zone abbreviation
+#  local_time_fg   -- Site honors Daylight Savings Time
+#  reliability_cd  -- Data reliability code
+#  gw_file_cd      -- Data-other GW files
+#  nat_aqfr_cd     -- National aquifer code
+#  aqfr_cd         -- Local aquifer code
+#  aqfr_type_cd    -- Local aquifer type code
+#  well_depth_va   -- Well depth
+#  hole_depth_va   -- Hole depth
+#  depth_src_cd    -- Source of depth data
+#  project_no      -- Project number
+#
+agency_cd	site_no	station_nm	site_tp_cd	lat_va	long_va	dec_lat_va	dec_long_va	coord_meth_cd	coord_acy_cd	coord_datum_cd	dec_coord_datum_cd	district_cd	state_cd	county_cd	country_cd	land_net_ds	map_nm	map_scale_fc	alt_va	alt_meth_cd	alt_acy_va	alt_datum_cd	huc_cd	basin_cd	topo_cd	instruments_cd	construction_dt	inventory_dt	drain_area_va	contrib_drain_area_va	tz_cd	local_time_fg	reliability_cd	gw_file_cd	nat_aqfr_cd	aqfr_cd	aqfr_type_cd	well_depth_va	hole_depth_va	depth_src_cd	project_no
+5s	15s	50s	7s	16s	16s	16s	16s	1s	1s	10s	10s	3s	2s	3s	2s	23s	20s	7s	8s	1s	3s	10s	16s	2s	1s	30s	8s	8s	8s	8s	6s	1s	1s	30s	10s	8s	1s	8s	8s	1s	12s
+USGS	02205865	SWEETWATER CREEK AT CLUB DRIVE NEAR LILBURN, GA	ST	335628	0840628	33.9411111	-84.1077778	M	S	NAD83	NAD83	13	13	135	US		LUXOMNI		851.75	X	.21	NAVD88	03070103			YNNNYNYNNYNNNYNNNNNNNNNNNNNNNN			21.0		EST	Y									AL-43N
+USGS	02206500	YELLOW RIVER NEAR SNELLVILLE, GA	ST	335111	0840442	33.85305556	-84.0783333	M	U	NAD83	NAD83	13	13	135	US		SNELLVILLE, GA	  24000	 801.04	W	.15	NAVD88	03070103			YNNNYNNNNNYNNNNNNNNNNNNNNNNNNN			136	136	EST	Y		NNNNNNNN							AL-50
+USGS	02207120	YELLOW RIVER AT GA 124, NEAR LITHONIA, GA	ST	334621	0840329.5	33.7725	-84.0581944	N	S	NAD83	NAD83	13	13	135	US		SNELLVILLE	  24000	719.78	X	.02	NAVD88	03070103			YNNNYNNNNYNNNYNNNNNNNNNNNNNNNN			161		EST	Y		NNNNNNNN							
+USGS	02207185	NO BUSINESS CREEK AT LEE ROAD, BELOW SNELLVILLE,GA	ST	334639	0840216	33.7775	-84.0377778	M	S	NAD83	NAD83	13	13	135	US		SNELLVILLE		735.53	X	.20	NAVD88	03070103			YNNNYNNNNYNNNYNNNNNNNNNNNNNNNN			10.1	10.1	EST	Y		NNNNNNNN							AL-57B
+USGS	02207385	BIG HAYNES CREEK AT LENORA ROAD, NR SNELLVILLE, GA	ST	334855.0	0835924.5	33.81527778	-83.99013889	M	S	NAD83	NAD83	13	13	135	US		LOGANVILLE, GA	  24000	843.09	X	.10	NAVD88	03070103			YNNNYNNNNYNNNYNNNNNNNNNNNNNNNN			17.3	17.3	EST	Y		NNNNNNNN							
+USGS	02207400	BRUSHY FORK CREEK AT BEAVER ROAD, NR LOGANVILLE,GA	ST	334917	0835633	33.82138889	-83.9425	M	S	NAD83	NAD83	13	13	135	US		LOGANVILLE, GA	  24000	884.53	X	.10	NAVD88	03070103			YNNNYNNNNYNNNNNNNNNNNNNNNNNNNN			8.18		EST	Y		NNNNNNNN							
+USGS	02208150	ALCOVY RIVER AT NEW HOPE ROAD, NEAR GRAYSON, GA	ST	335501	0835317	33.91694444	-83.8880556	M	S	NAD83	NAD83	13	13	135	US		LAWRENCEVILLE, GA	  24000	785.51	X	.23	NAVD88	03070103			YNNNYNNNNYNNNYNNNNNNNNNNNNNNNN			30.8	30.8	EST	Y		NNNNNNNN							AL-83K
+USGS	02217274	WHEELER CREEK AT BILL CHEEK ROAD, NEAR AUBURN, GA	ST	340456	0835116	34.0822222	-83.8544444	M	S	NAD83	NAD83	13	13	135	US		AUBURN, GA	  24000	884.31	X	.07	NAVD88	03070101			YNNNYNNNNYNNNYNNNNNNNNNNNNNNNN			1.31		EST	Y		NNNNNNNN							AL-247D
+USGS	02218565	APALACHEE RIVER AT FENCE ROAD, NEAR DACULA, GA	ST	340037	0835339	34.01027778	-83.8941667	M	S	NAD83	NAD83	13	13	135	US		HOG MOUNTAIN, GA	  24000	930.19	X	.07	NAVD88	03070101			YNNNYNNNNYNNNYNNNNNNNNNNNNNNNN			5.65		EST	Y		NNNNNNNN							
+USGS	02334480	RICHLAND CREEK AT SUWANEE DAM ROAD, NEAR BUFORD,GA	ST	340757	0840412	34.1325	-84.07	M	S	NAD83	NAD83	13	13	135	US		BUFORD DAM	  24000	923.99	X	.05	NAVD88	03130001			YNNNYNNNNYNNNYNNNNNNNNNNNNNNNN			9.37		EST	Y		NNNNNNNN							
+USGS	02334578	LEVEL CREEK AT SUWANEE DAM ROAD, NEAR SUWANEE, GA	ST	340547	0840441	34.09638889	-84.0780556	M	S	NAD83	NAD83	13	13	135	US		SUWANEE		956.47	X	.01	NAVD88	03130001			YNNNYNNNNYNNNYNNNNNNNNNNNNNNNN			5.06		EST	Y		NNNNNNNN							CH-62E
+USGS	02334885	SUWANEE CREEK AT SUWANEE, GA	ST	340157	0840520	34.0325	-84.08888889	M	S	NAD83	NAD83	13	13	135	US		SUWANEE		909.96	L	.01	NAVD88	03130001			YNNNYNNNNNYNNYNNNNNNNNNNNNNNNN			47.1		EST	Y		NNNNNNNN							
+USGS	02335350	CROOKED CREEK NEAR NORCROSS, GA	ST	335754	0841553	33.965	-84.2647222	M	S	NAD83	NAD83	13	13	135	US		CHAMBLEE, GA	  24000	869.90	X	.05	NAVD88	03130001			NNNNYNNNNNNNNNNNNNNNNNNNNNNNNN			8.87		EST	Y		NNNNNNNN							
+USGS	02336030	N.F. PEACHTREE CREEK AT GRAVES RD, NR DORAVILLE,GA	ST	335421	0841330	33.9058333	-84.225	M	S	NAD83	NAD83	13	13	135	US		NORCROSS, GA	  24000	928.55	X	.05	NAVD88	03130001		C	YNNNYNNNNYNNNYNNNNNNNNNNNNNNNN			1.53		EST	Y		NNNNNNNN							CH-103D
