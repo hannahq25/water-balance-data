@@ -73,9 +73,11 @@ nlcd_wkt= """
     AXIS["Northing",NORTH]]
     """
 nlcd_crs = WellKnownText(GeoFormatTypes.CRS(), nlcd_wkt)
+albers_crs = EPSG(5070)
 
 #converts from wgs to the input files projection
 wgs_2_nlcdproj = Proj.Transformation("EPSG:4326", nlcd_wkt, always_xy=true) 
+wgs_2_albersproj = Proj.Transformation("EPSG:4326", "EPSG:5070", always_xy=true)
 end
 
 # ╔═╡ 0430f618-31f9-4272-b5f5-6db55be469ac
@@ -103,6 +105,17 @@ begin
 		global ext = GeoInterface.Extents.union(
 			ext, GeoInterface.extent(gage_basins[g]))
 	end
+
+	ssurgo_ext = Extent(x=(0, 0), y=(0, 0))
+	#min_x, max_x, min_y, max_y = -2.06025f6, 2.63875f6, -1.915f6, 1.384f6
+	gage_basins_ssurgo = Dict{}()
+	for g in USGS_Gages
+		g_geom = GeoJSON.read(pull_watershed(g)).features[1].geometry[1]
+		projected_xys = [wgs_2_albersproj(x,y) for (x, y) in g_geom]
+		gage_basins_ssurgo[g] = GeoInterface.Polygon([projected_xys], crs=albers_crs)
+		global ssurgo_ext = GeoInterface.Extents.union(
+			ssurgo_ext, GeoInterface.extent(gage_basins_ssurgo[g]))
+	end
 end
 
 # ╔═╡ a2624ecf-c294-45cf-bd78-3c1fecb3a443
@@ -118,13 +131,43 @@ using Rasters, ArchGDAL
 # ╔═╡ 100aadda-6e45-469c-bd67-6cb54e6e2e2c
 begin
     sample_path = "../../hq-data/NLCD/Annual_NLCD_FctImp_1985_CU_C1V2_ef5fc425-51d8-47d2-a7d5-30b0a408bf51.tiff"
-	sample_tiff = Raster(sample_path, lazy=true)
+	sample_tiff = Raster(sample_path, lazy=true, missingval=NaN)
+    sample_clipped_ras = crop(sample_tiff; to=ext)
+	maras= mask(sample_clipped_ras; with=boolmask(gage_basins["02207120"], to=sample_clipped_ras))
 end
 
-# ╔═╡ 9f534853-0087-47ab-a4e4-8e9ff90521be
+# ╔═╡ 53932678-912a-4521-8629-923a8c9b0b46
 begin
-	clipped_ras = crop(sample_tiff; to=ext)
-	maras= mask(clipped_ras; with=boolmask(gage_basins["02207120"], to=clipped_ras))
+    function singleHSG(hsg)
+        # converts hydrological soil group letter(s) to number
+        if ismissing(hsg) || hsg == "missing"
+            return -9999.0
+        else 
+            return split(hsg, "/") .|> only .|> Int |> mean 
+        end
+    end
+
+    function meanHSG(hsgs)
+        # takes average of hydrologic soil group numbers
+        return hsgs |> mean |> (x -> round(x, RoundNearestTiesUp))
+    end
+end
+
+# ╔═╡ 687fc236-b3f7-4f10-b4c7-8fe7a8011392
+begin
+    ssurgo_tiff_path = "../../hq-data/gSSURGO/SQLite_SSURGO_GA/muraster_10m_GA.tif"
+	ssurgo_tiff = Raster(ssurgo_tiff_path, lazy=true, missingval=-9999) # raster of map unit keys
+	ssurgo_clipped_ras = crop(ssurgo_tiff; to=ssurgo_ext)
+
+	ssurgo_gpkg_path = "../../hq-data/gSSURGO/SQLite_SSURGO_GA/SQLite_SSURGO_GA.gpkg"
+	df_muaggatt = 
+		DataFrame(ArchGDAL.getlayer(ArchGDAL.read(ssurgo_gpkg_path), "muaggatt"))
+	mukeys = collect(Int.(df_muaggatt.mukey))
+
+	### Hydrologic Group - Dominant Conditions
+    d_hg = Dict(zip(mukeys, df_muaggatt.hydgrpdcd)) # dict of map unit keys to HSG strings
+    ras_hg = singleHSG.(get.(Ref(d_hg), ssurgo_clipped_ras, "missing")) # raster of HSG numbers
+    ras_hg_30m = resample(aggregate(meanHSG, ras_hg, (Y(3), X(3))), to=sample_clipped_ras)
 end
 
 # ╔═╡ 490a764e-cc02-44ea-9a82-41947eac5f4a
@@ -199,7 +242,7 @@ begin
 end
 
 # ╔═╡ 28dc13f1-edc7-44cc-960a-b963f8712975
-fctimp_working = copy(fctimp_data)
+fctimp_working = copy(fctimp_data);
 
 # ╔═╡ 82f0a45e-252a-4538-847f-4fc7bd391e21
 #VSCODE-MARKDOWN
@@ -208,8 +251,30 @@ md"""
 The data is categorical and will be summarized as percentage (0-100) of each watershed covered by each land cover class
 """
 
+# ╔═╡ ecdc797d-9bb3-4c64-8fde-fbc5886f44e1
+function CN(lc, hsg)
+	# https://doi-org.proxy2.library.illinois.edu/10.1061/JHYEFF.HEENG-6496
+	# https://www.hec.usace.army.mil/confluence/hmsdocs/hmsguides/gis-tools-and-terrain-data/gis-tutorials-and-guides/creating-a-curve-number-grid-and-computing-subbasin-average-curve-number-values
+   
+	CN_dict = Dict(
+		11 => (98, 98, 98, 98), 12 => (98, 98, 98, 98),
+		21 => (49, 69, 79, 84), 22 => (57, 72, 81, 86), 
+		23 => (61, 75, 83, 87), 24 => (81, 88, 91, 93),
+		31 => (78, 86, 91, 93), 41 => (45, 66, 77, 83), 
+		42 => (25, 55, 70, 77), 43 => (36, 60, 73, 79),
+		52 => (55, 72, 81, 86), 71 => (50, 69, 79, 84),
+		81 => (49, 69, 79, 84), 82 => (67, 78, 85, 89),
+		90 => (30, 58, 71, 78), 95 => (30, 58, 71, 78))
+
+	if hsg == -9999
+		return missing
+	else
+		return CN_dict[lc][Int(hsg)-Int('A')+1]
+	end
+end
+
 # ╔═╡ adc68b46-8d07-4790-b9b9-46e175648ed6
-begin
+begin	
 	lc_dict = Dict(11 => "OpenWater", 12 => "PerennialIce/Snow",
 		21 => "DevelopedOpenSpace", 22 => "DevelopedLowIntensity", 
 		23 => "DevelopedMediumIntensity", 24 => "DevelopedHighIntensity",
@@ -224,6 +289,16 @@ begin
 		year = Int16[],
 		gage = String[],
 		percent = Float16[])
+
+	cn_data = DataFrame(
+		variable  = String[],
+		year = Int16[],
+		gage = String[],
+		CN_mean = Int8[],
+		CN_maximum = Int8[],
+		CN_minimum = Int8[],
+		CN_median = Int8[]
+	)
 	
     #get a sample raster to compare stats to to make sure everything matches before clipping/combining
 	sample_ras_lndcov = get_raster("LndCov", years[1])
@@ -231,18 +306,33 @@ begin
 	for y in years
 		ras = get_raster("LndCov", y)
 		if check_match(sample_ras_lndcov, ras)
-			clipped_ras = crop(ras; to=ext)
+			clipped_lc_ras = crop(ras; to=ext)
 			for g in USGS_Gages
-				masked_ras = mask(clipped_ras; 
-								  with=boolmask(gage_basins[g], to=clipped_ras))
+				masked_lc_ras = mask(clipped_lc_ras;
+					with=boolmask(gage_basins[g], to=clipped_lc_ras))
+				masked_hg_ras = mask(ras_hg_30m;
+					with=boolmask(gage_basins[g], to=ras_hg_30m))
+
+				cn_ras = passmissing(CN).(masked_lc_ras, masked_hg_ras)
+				
+				new_cn_row = (
+					variable = "CN",
+					year = y,
+					gage = g,
+					CN_mean = round(Int, mean(skipmissing(cn_ras))),
+					CN_maximum = maximum(skipmissing(cn_ras)),
+					CN_minimum = minimum(skipmissing(cn_ras)),
+					CN_median = median(skipmissing(cn_ras)))
+				push!(cn_data, new_cn_row)
+
 				for (lckey, lcvalue) in lc_dict
-					new_row = (
+					new_lc_row = (
 						variable = lcvalue,
 						year = y,
 						gage = g,
 						percent = 100 * count(x -> x == lckey,
-						skipmissing(masked_ras)) / count(!ismissing, masked_ras))
-					push!(lndcov_data, new_row)
+						skipmissing(masked_lc_ras)) / count(!ismissing, masked_lc_ras))
+					push!(lndcov_data, new_lc_row)
 				end
 			end
 		else
@@ -253,15 +343,19 @@ begin
 end
 
 # ╔═╡ 4d563163-4bb0-4b01-a747-cd65db5bbd8e
-lndcov_working = copy(lndcov_data)
+lndcov_working = copy(lndcov_data);
 
 # ╔═╡ f90cbd93-6846-48cd-9c6d-69447c6d5e2c
-lndcov_gb = groupby(lndcov_data, :variable)
+lndcov_gb = groupby(lndcov_data, :variable);
+
+# ╔═╡ dbd86dd9-4489-4205-bca3-7c31f25ea933
+cn_working = copy(cn_data);
 
 # ╔═╡ bee0f37a-5f2d-468c-ac53-d1cc68f23a84
 begin
 	dfs = []
 	push!(dfs, select(fctimp_working, Not(:variable)))
+	push!(dfs, select(cn_working, Not(:variable)))
 	for v in unique(lndcov_working.variable)
 		df_single = copy(lndcov_gb[(v,)])
 		col_nm = v*"_percent"
@@ -272,13 +366,63 @@ begin
 end
 
 # ╔═╡ 521f2dc1-0305-4727-8a1c-c90695a23d23
-df_cleaned = outerjoin(dfs..., on = [:year, :gage])
+df_cleaned = outerjoin(dfs..., on = [:year, :gage]);
 
 # ╔═╡ e36b7805-0a70-4636-9c8d-39fa202649b8
 begin
-	out_future = "land_cover_annual.csv"
+	out_future = "land_cover_annual_with_CN.csv"
 	CSV.write(out_future, df_cleaned)
 end
+
+# ╔═╡ fefc1e5c-dbce-4d45-b808-023319205849
+#VSCODE-MARKDOWN
+md"""
+### Exploration
+"""
+
+# ╔═╡ 6316c1c0-9b80-4d5c-9c06-33247e00c3e4
+using Plots
+
+# ╔═╡ 28339a57-b57b-4274-ad32-37b564814369
+dfg = groupby(df_cleaned, :gage)
+
+
+# ╔═╡ 6fd50b3e-8fad-48b7-b312-080bd84c6281
+function plotVariableByWatershed(variable, variableName)
+    gage_names = Dict("02205000" => "Wildcat Creek",
+			"02205865" => "Sweetwater Creek",
+			"02206500" => "Yellow River near Snellville",
+			"02207120" => "Yellow River near Lithonia",
+			"02207185" => "No Business Creek",
+			"02207385" => "Big Haynes Creek",
+			"02207400" => "Brushy Fork Creek",
+			"02208150" => "Alcovy River",
+			"02217274" => "Wheeler Creek",
+			"02218565" => "Apalachee River",
+			"02334480" => "Richland Creek",
+			"02334578" => "Level Creek",
+			"02334885" => "Suwanee Creek",
+			"02335350" => "Crooked Creek",
+			"02336030" => "North Fork Peachtree Creek")
+    plots = []
+
+    for df in dfg
+       push!(plots, plot(df.year, df[!, variable], 
+	   	title=get(gage_names, df.gage[1], ""), titlefontsize=8, label=:none))
+    end
+
+    plot(plots..., plot_title="$variableName by Watershed", 
+		layout=(4,4), size=(800,800))
+end
+
+# ╔═╡ 192611d4-a35a-4c9a-bf00-d5026add238b
+plotVariableByWatershed(:FctImp_mean, "Mean Fractional Impervious Area")
+
+# ╔═╡ e523b56f-15b2-44ca-abdd-836b7226e884
+plotVariableByWatershed(:CN_mean, "Mean Curve Number")
+
+# ╔═╡ b5bfab38-404b-4d2e-aaa4-53fa4bf04e13
+plotVariableByWatershed(:DeciduousForest_percent, "Percentage of Deciduous Forest Land Cover")
 
 # ╔═╡ Cell order:
 # ╠═d1feafff-c32b-455e-b777-222e2ad0eff8
@@ -292,7 +436,8 @@ end
 # ╠═a2624ecf-c294-45cf-bd78-3c1fecb3a443
 # ╠═50583f67-1431-4dc3-b8c4-268034c8ddf8
 # ╠═100aadda-6e45-469c-bd67-6cb54e6e2e2c
-# ╠═9f534853-0087-47ab-a4e4-8e9ff90521be
+# ╠═53932678-912a-4521-8629-923a8c9b0b46
+# ╠═687fc236-b3f7-4f10-b4c7-8fe7a8011392
 # ╠═490a764e-cc02-44ea-9a82-41947eac5f4a
 # ╠═e545bf96-a175-407d-88bf-43f398f0e3f0
 # ╠═0f2455aa-0bbe-4454-9542-34ec8e527a72
@@ -301,9 +446,18 @@ end
 # ╠═0fab2640-4e85-445f-bc77-dd55e0d5552c
 # ╠═28dc13f1-edc7-44cc-960a-b963f8712975
 # ╠═82f0a45e-252a-4538-847f-4fc7bd391e21
+# ╠═ecdc797d-9bb3-4c64-8fde-fbc5886f44e1
 # ╠═adc68b46-8d07-4790-b9b9-46e175648ed6
 # ╠═4d563163-4bb0-4b01-a747-cd65db5bbd8e
 # ╠═f90cbd93-6846-48cd-9c6d-69447c6d5e2c
+# ╠═dbd86dd9-4489-4205-bca3-7c31f25ea933
 # ╠═bee0f37a-5f2d-468c-ac53-d1cc68f23a84
 # ╠═521f2dc1-0305-4727-8a1c-c90695a23d23
 # ╠═e36b7805-0a70-4636-9c8d-39fa202649b8
+# ╠═fefc1e5c-dbce-4d45-b808-023319205849
+# ╠═6316c1c0-9b80-4d5c-9c06-33247e00c3e4
+# ╠═28339a57-b57b-4274-ad32-37b564814369
+# ╠═6fd50b3e-8fad-48b7-b312-080bd84c6281
+# ╠═192611d4-a35a-4c9a-bf00-d5026add238b
+# ╠═e523b56f-15b2-44ca-abdd-836b7226e884
+# ╠═b5bfab38-404b-4d2e-aaa4-53fa4bf04e13
