@@ -19,8 +19,12 @@ begin
 	
 	folder = @__DIR__
 
-	figure_folder = joinpath(folder, "Figures")
 	data_folder = joinpath(folder, "USGS_Raw")
+
+	figure_folder = joinpath(folder, "..", "..", "figures")
+	mkpath(figure_folder)
+
+	land_cover_file = joinpath(folder, "..", "land-cover-dataset-work", "land_cover_annual_with_CN.csv")
  
 	start_date = Date(1985, 1, 1)
 	end_date = Date(2026, 12, 31)
@@ -30,7 +34,7 @@ end
 
 # ╔═╡ 84ea2dd3-2e09-4711-bdf3-f9a428d6738e
 begin
-	site_numbers = ["02205865", "02206500", "02207120", "02207185", "02207385",
+	gage_number = ["02205865", "02206500", "02207120", "02207185", "02207385",
 	                "02207400", "02208150", "02217274", "02218565", "02334480",
 	                "02334578", "02334885", "02335350", "02336030"]
  
@@ -70,16 +74,16 @@ begin
  
 	within_watershed = ["Yes", "Yes", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No"]
  
-	number_of_gages = length(site_numbers)
+	number_of_gages = length(gage_number)
  
-	gage_table = DataFrame(gage = site_numbers, site_name = station_names, watershed = site_names, area = gage_area, within_watershed = within_watershed)
+	gage_table = DataFrame(gage = gage_number, site_name = station_names, watershed = site_names, area = gage_area, within_watershed = within_watershed)
 end
 
 # ╔═╡ d404cd74-8f96-4882-9c67-b64892ca8265
 begin
 	file_list = String[]
 	for x in 1:number_of_gages
-		push!(file_list, joinpath(data_folder, site_numbers[x] * ".txt"))
+		push!(file_list, joinpath(data_folder, gage_number[x] * ".txt"))
 	end
 	file_list
 end
@@ -91,9 +95,10 @@ begin
 	area = Float64[]                          # mi2
 	date = Date[]
 	discharge = Union{Float64, Missing}[]     # ft3/s
+	approval = String[]
 
 	for x in 1:number_of_gages
-		raw_data = readlines(joinpath(data_folder, site_numbers[x] * ".txt"))
+		raw_data = readlines(joinpath(data_folder, gage_number[x] * ".txt"))
 
 		data_rows = String[]
 		for line in raw_data
@@ -104,25 +109,28 @@ begin
 
 		for y in 3:length(data_rows)
 			a = split(data_rows[y], "\t")
-			row_date = a[3]
-			row_discharge = a[4]
+			disc_date = a[3]
+			disc_discharge = a[4]
+			disc_approval = a[5]
 
-			push!(gage, site_numbers[x])
+			push!(gage, gage_number[x])
 			push!(watershed, site_names[x])
 			push!(area, gage_area[x])
-			push!(date, Date(row_date))
+			push!(date, Date(disc_date))
 
-			value = tryparse(Float64, row_discharge)
+			value = tryparse(Float64, disc_discharge)
 			if value === nothing
 				push!(discharge, missing)
 			else
 				push!(discharge, value)
 			end
+
+			push!(approval, disc_approval)
 		end
 	end
 
 	discharge_data = DataFrame(gage = gage, watershed = watershed,
-		area = area, date = date, discharge = discharge)
+		area = area, date = date, discharge = discharge, approval = approval)
 end
 
 # ╔═╡ 2c8972c1-26fc-4170-9e66-c3a70b0154db
@@ -154,56 +162,9 @@ begin
 	gage_data = dropmissing(gage_data)
  
 	gage_data = gage_data[(gage_data.date .>= start_date) .& (gage_data.date .<= end_date), :]
-end
 
-# ╔═╡ e5e1ee76-8569-4e73-86f9-206304067f15
-begin
-	summary_table = DataFrame(gage = String[], watershed = String[],
-		mean_discharge = Float64[], median_discharge = Float64[],   # ft3/s
-		min_discharge = Float64[], max_discharge = Float64[],       # ft3/s
-		average_annual_runoff = Float64[])                          # mm/yr
-
-	for x in 1:number_of_gages
-		this_gage = gage_data[gage_data.gage .== site_numbers[x], :]
-		flows = this_gage.discharge
-
-		push!(summary_table, (site_numbers[x], site_names[x],
-			round(mean(flows), digits = 2),
-			round(median(flows), digits = 2),
-			round(minimum(flows), digits = 2),
-			round(maximum(flows), digits = 1),
-			round(mean(this_gage.runoff) * 365, digits = 0)))
-	end
-
-	summary_table
-end
-
-# ╔═╡ 6500b04b-f7f6-451a-827f-e8d24c5b08c6
-begin
-	maxflow_name = String[]
-	maxflow_date = Date[]
-	maxflow_flow = Float64[]
-	maxflow_runoff = Float64[]
-	maxflow_median = Float64[]
-
-	for x in 1:number_of_gages
-		this_gage = gage_data[gage_data.gage .== site_numbers[x], :]
-		typical_flow = median(this_gage.discharge)
-
-		sorted_gage = sort(this_gage, :discharge, rev = true)
-		for y in 1:3
-			push!(maxflow_name, site_names[x])
-			push!(maxflow_date, sorted_gage.date[y])
-			push!(maxflow_flow, sorted_gage.discharge[y])
-			push!(maxflow_runoff, round(sorted_gage.runoff[y], digits = 1))
-			push!(maxflow_median, round(sorted_gage.discharge[y] / typical_flow, digits = 0))
-		end
-	end
-
-	largest_flows = DataFrame(watershed = maxflow_name, date = maxflow_date,
-		discharge = maxflow_flow, runoff = maxflow_runoff, times_median = maxflow_median)
-
-	sort(largest_flows, :date)
+	# removing provisional data
+	gage_data = gage_data[startswith.(gage_data.approval, "A"), :]
 end
 
 # ╔═╡ 4dc630f2-b95a-4854-a97f-c06b221bdfb7
@@ -211,27 +172,27 @@ begin
 	annual_table = DataFrame(gage = String[], watershed = String[], year = Int[],
 		days_with_data = Int[], complete_year = Bool[],
 		mean_discharge = Float64[], median_discharge = Float64[],   # ft3/s
-		min_discharge = Float64[], max_discharge = Float64[],       # ft/s
+		min_discharge = Float64[], max_discharge = Float64[],       # ft3/s
 		peak_runoff = Float64[],                                    # mm/day
 		total_runoff = Float64[])                                   # mm/yr
 
 	for x in 1:number_of_gages
 		for y in first_year:last_year
-			this_year = gage_data[(gage_data.gage .== site_numbers[x]) .& (gage_data.year .== y), :]
-			n = nrow(this_year)
+			gage_year = gage_data[(gage_data.gage .== gage_number[x]) .& (gage_data.year .== y), :]
+			n = nrow(gage_year)
 			if n == 0
 				continue
 			end
 
-			total = sum(this_year.runoff) * daysinyear(y) / n
+			total = sum(gage_year.runoff) * daysinyear(y) / n
 
-			push!(annual_table, (site_numbers[x], site_names[x], y,
-				n, n >= 330,
-				round(mean(this_year.discharge), digits = 2),
-				round(median(this_year.discharge), digits = 2),
-				round(minimum(this_year.discharge), digits = 2),
-				round(maximum(this_year.discharge), digits = 1),
-				round(maximum(this_year.runoff), digits = 2),
+			push!(annual_table, (gage_number[x], site_names[x], y,
+				n, n >= 360,
+				round(mean(gage_year.discharge), digits = 2),
+				round(median(gage_year.discharge), digits = 2),
+				round(minimum(gage_year.discharge), digits = 2),
+				round(maximum(gage_year.discharge), digits = 1),
+				round(maximum(gage_year.runoff), digits = 2),
 				round(total, digits = 1)))
 		end
 	end
@@ -251,15 +212,15 @@ begin
 		r_squared = Float64[])
 
 	for x in 1:number_of_gages
-		this_gage = gage_data[gage_data.gage .== site_numbers[x], :]
+		gage_gage = gage_data[gage_data.gage .== gage_number[x], :]
 
 		years = Float64[]
 		annual_means = Float64[]
 		for yr in first_year:last_year
-			this_year = this_gage[this_gage.year .== yr, :]
-			if nrow(this_year) >= 330
+			gage_year = gage_gage[gage_gage.year .== yr, :]
+			if nrow(gage_year) >= 360
 				push!(years, yr)
-				push!(annual_means, mean(this_year.discharge))
+				push!(annual_means, mean(gage_year.discharge))
 			end
 		end
 
@@ -273,9 +234,9 @@ begin
 		mid_dates = Date.(Int.(years), 7, 1)
 		trend_line = intercept .+ slope .* years
 
-		# likely would need to remove or change the title
+		# likely would need to remove or change the title ??
 		
-		fig = plot(this_gage.date, this_gage.discharge, yscale = :log10, label = "Daily mean discharge", title = site_names[x], xlabel = "Date", ylabel = "Discharge (ft³/s)")
+		fig = plot(gage_gage.date, gage_gage.discharge, yscale = :log10, label = "Daily mean discharge", title = site_names[x], xlabel = "Date", ylabel = "Discharge (ft³/s)")
 		scatter!(fig, mid_dates, annual_means, color = :black, label = "Annual mean discharge")
 		plot!(fig, mid_dates, trend_line, color = :red, linewidth = 2, label = "Trend line")
 
@@ -292,12 +253,71 @@ end
 # ╔═╡ 3a45e952-2bd2-49e6-9983-f7bdd3323d57
 trend_table
 
+# ╔═╡ a70ad1b9-8f31-418d-b634-1c97f887bd5e
+land_cover = CSV.read(land_cover_file, DataFrame; types = Dict(:gage => String))
+
+# ╔═╡ be4a9e6d-a8d8-4f5d-aa21-f1c7e1df39c7
+begin
+
+	urbanization = DataFrame(gage = String[], watershed = String[], curve_number = Float64[], annual_runoff = Float64[], peak_runoff = Float64[])
+
+	for x in 1:number_of_gages
+		years = complete_years[complete_years.gage .== gage_number[x], :]
+
+		cn_values = Float64[]
+		runoff_values = Float64[]
+		peak_values = Float64[]
+		for y in 1:nrow(years)
+			land_cover_year = land_cover[(land_cover.gage .== gage_number[x]) .& 			(land_cover.year .== years.year[y]), :]
+			if nrow(land_cover_year) > 0
+				push!(cn_values, land_cover_year.CN_mean[1])
+				push!(runoff_values, years.total_runoff[y])
+				push!(peak_values, years.peak_runoff[y])
+			end
+		end
+
+		push!(urbanization, (gage_number[x], site_names[x],
+			round(mean(cn_values), digits = 1),
+			round(mean(runoff_values), digits = 0),
+			round(mean(peak_values), digits = 1)))
+	end
+
+	urbanization
+end
+
+# ╔═╡ ccd80a0b-3ac7-4830-8e66-e37f956f3a6c
+begin
+	urban_gage = []
+
+	for x in 1:number_of_gages
+		years = complete_years[complete_years.gage .== gage_number[x], :]
+		cn_years = land_cover[land_cover.gage .== gage_number[x], :]
+
+		fig = scatter(years.year, years.total_runoff,
+			label = "Annual runoff", ylabel = "Annual runoff (mm)",
+			title = site_names[x], titlefontsize = 10,
+			xlabel = "Year", xlims = (first_year, 2025), legend = :topleft)
+
+		# might also need to change the title ??
+
+		plot!(twinx(fig), cn_years.year, cn_years.CN_mean, color = :red, linewidth = 2,
+			label = "Curve number", ylabel = "Curve number",
+			xlims = (first_year, 2025), legend = :topright)
+
+		push!(urban_gage, fig)
+	end
+
+	all_time = plot(urban_gage..., layout = (7, 2), size = (1600, 2800),
+		legendfontsize = 7, left_margin = 10Plots.mm, right_margin = 10Plots.mm,
+		bottom_margin = 8Plots.mm)
+	savefig(all_time, joinpath(figure_folder, "urbanization and gage.png"))
+	all_time
+end
+
 # ╔═╡ 759fc7d5-4dbf-419e-9819-747ce4c82324
 begin
 	CSV.write(joinpath(folder, "gage_daily.csv"), gage_data)
 	CSV.write(joinpath(folder, "gage_annual.csv"), annual_table)
-	CSV.write(joinpath(folder, "gage_summary.csv"), summary_table)
-	CSV.write(joinpath(folder, "gage_trends.csv"), trend_table)
 	"Tables saved to " * folder
 end
 
@@ -2095,12 +2115,13 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 # ╠═d404cd74-8f96-4882-9c67-b64892ca8265
 # ╠═3146fd64-57b3-4d82-a138-b71f6680e6d8
 # ╠═2c8972c1-26fc-4170-9e66-c3a70b0154db
-# ╠═e5e1ee76-8569-4e73-86f9-206304067f15
-# ╠═6500b04b-f7f6-451a-827f-e8d24c5b08c6
 # ╠═4dc630f2-b95a-4854-a97f-c06b221bdfb7
 # ╠═95984078-f49f-43bf-8513-1506ed2c1071
 # ╠═b40dec66-5509-4ced-9906-a2378c317041
 # ╠═3a45e952-2bd2-49e6-9983-f7bdd3323d57
+# ╠═a70ad1b9-8f31-418d-b634-1c97f887bd5e
+# ╠═be4a9e6d-a8d8-4f5d-aa21-f1c7e1df39c7
+# ╠═ccd80a0b-3ac7-4830-8e66-e37f956f3a6c
 # ╠═759fc7d5-4dbf-419e-9819-747ce4c82324
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
