@@ -377,52 +377,25 @@ end
 # ╔═╡ fefc1e5c-dbce-4d45-b808-023319205849
 #VSCODE-MARKDOWN
 md"""
-### Exploration
+### Visualization
 """
 
 # ╔═╡ 6316c1c0-9b80-4d5c-9c06-33247e00c3e4
-using Plots
+using Plots, Measures
 
-# ╔═╡ 28339a57-b57b-4274-ad32-37b564814369
-dfg = groupby(df_cleaned, :gage)
+# ╔═╡ db248c05-40a3-4530-9ba5-b48105693d7d
+begin
+    ras_fctimp_1985 = crop(get_raster("FctImp", 1985), to=ext)
+    ras_fctimp_2024 = crop(get_raster("FctImp", 2024), to=ext)
 
+    plot(ras_fctimp_1985, xlabel="", ylabel="", title="1985", axis=false,
+        colorbar_title = "Fractional Impervious Area (%)")
+    savefig("../../figures/FctImp1985.png")
 
-# ╔═╡ 6fd50b3e-8fad-48b7-b312-080bd84c6281
-function plotVariableByWatershed(variable, variableName)
-    gage_names = Dict("02205000" => "Wildcat Creek",
-			"02205865" => "Sweetwater Creek",
-			"02206500" => "Yellow River near Snellville",
-			"02207120" => "Yellow River near Lithonia",
-			"02207185" => "No Business Creek",
-			"02207385" => "Big Haynes Creek",
-			"02207400" => "Brushy Fork Creek",
-			"02208150" => "Alcovy River",
-			"02217274" => "Wheeler Creek",
-			"02218565" => "Apalachee River",
-			"02334480" => "Richland Creek",
-			"02334578" => "Level Creek",
-			"02334885" => "Suwanee Creek",
-			"02335350" => "Crooked Creek",
-			"02336030" => "North Fork Peachtree Creek")
-    plots = []
-
-    for df in dfg
-       push!(plots, plot(df.year, df[!, variable], 
-	   	title=get(gage_names, df.gage[1], ""), titlefontsize=8, label=:none))
-    end
-
-    plot(plots..., plot_title="$variableName by Watershed", 
-		layout=(4,4), size=(800,800))
+    plot(ras_fctimp_2024, xlabel="", ylabel="", title="2024", axis=false,
+        colorbar_title = "Fractional Impervious Area (%)")
+    savefig("../../figures/FctImp2024.png")
 end
-
-# ╔═╡ 192611d4-a35a-4c9a-bf00-d5026add238b
-plotVariableByWatershed(:FctImp_mean, "Mean Fractional Impervious Area")
-
-# ╔═╡ e523b56f-15b2-44ca-abdd-836b7226e884
-plotVariableByWatershed(:CN_mean, "Mean Curve Number")
-
-# ╔═╡ b5bfab38-404b-4d2e-aaa4-53fa4bf04e13
-plotVariableByWatershed(:DeciduousForest_percent, "Percentage of Deciduous Forest Land Cover")
 
 # ╔═╡ Cell order:
 # ╠═d1feafff-c32b-455e-b777-222e2ad0eff8
@@ -456,8 +429,4 @@ plotVariableByWatershed(:DeciduousForest_percent, "Percentage of Deciduous Fores
 # ╠═e36b7805-0a70-4636-9c8d-39fa202649b8
 # ╠═fefc1e5c-dbce-4d45-b808-023319205849
 # ╠═6316c1c0-9b80-4d5c-9c06-33247e00c3e4
-# ╠═28339a57-b57b-4274-ad32-37b564814369
-# ╠═6fd50b3e-8fad-48b7-b312-080bd84c6281
-# ╠═192611d4-a35a-4c9a-bf00-d5026add238b
-# ╠═e523b56f-15b2-44ca-abdd-836b7226e884
-# ╠═b5bfab38-404b-4d2e-aaa4-53fa4bf04e13
+# ╠═db248c05-40a3-4530-9ba5-b48105693d7d
