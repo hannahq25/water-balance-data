@@ -290,7 +290,7 @@ In @ensemble-comparison we compare the ensemble annual rainfall in mm which is a
 
 #figure(
   caption: [Annual Rainfall Comparison between CNRM-CM5 and Climate Explorer Ensemble for Gwinnett County, GA],
-  image("figures/ensemble_comparison.png", width: 100%),
+  image("figures/Ensemble_vs_CNRM-CM5.png", width: 100%),
   ) <ensemble-comparison>
 
 Because we are evaluating precipitation across three datasets, it is critical to confirm the datasets correlate year to year.  @precip-ensemble-comparison compares the three datasets,  MACA (precipitation), GridMET (precipitation) and the Water Balance Data (rainfall) for a sample watershed (02207120).  For each dataset, the gridded data was processed into a mean daily value per watershed and then into a mean annual value (in mm).  The comparisons confirm the GridMET and Water Balance datasets align.  Because in the water balance dataset the precipitation is a combination of snowfall (not stored) and rainfall (the variable plotted below), we expect the water balance dataset to constantly have slightly lower values. The other critical item of note is that for the MACA dataset, while it does have a historical component, does not attempt to recreate the actual historical data but was instead validated based on overall #link("https://www.climatologylab.org/maca.html")[trends]. Therefore the MACA data should only be used as part of this project in a similar fashion, in larger 10-30 year time blocks.  
