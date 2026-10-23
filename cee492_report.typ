@@ -111,7 +111,22 @@ The future water balance data is available as Georeferenced Tagged Image File Fo
 == GridMET
 The gridMET data are available as NetCDF files, usually one file per variable per year, on a regular latitude–longitude grid in geographic coordinate system World Geodetic System 1984 (WGS84). This is also available through Google Earth Engine. Gridded daily time series covering the contiguous US from 1979 to the present, at about 4 km resolution (1/24°). It blends the spatial detail of Parameter-elevation Regressions on Independent Slopes Model (PRISM) climate data with the daily timing of National Land Data Assimilation System Phase 2 (NLDAS-2) reanalysis.
 
-The dataset includes precipitation (`pr`, mm), daily maximum and minimum temperature (`tmmx`, `tmmn`, in Kelvin), relative and specific humidity, solar radiation, wind speed, and reference evapotranspiration. The project mainly uses precipitation and temperature. 
+The dataset includes precipitation, daily maximum and minimum temperature, which are the primary climate variables for the project. Other variables, that may be used as part of the project, included in the dataset such as srad, vpd and pdsi. The table below lists the variables used in this project.
+
+#figure(
+  caption: [GridMET Variables],
+  table(
+    columns: (auto, auto, auto),
+    align: (center, left, center),
+  table.header([*Variable*],[*Description*],[*Units*]),
+  [`pr`],[daily accumulated precipitation],[mm/day],
+  [`tmmx`],[daily maximum air temperature],[K],
+  [`tmmn`],[daily minimum air temperature],[K],
+  [`srad`],[Downward surface shortwave solar radiation],[W/m²],
+  [`vpd`],[mean vapor pressure deficit],[kPa],
+  [`pdsi`],[Palmer Drought Severity Index (ten-day severity indicator)],[none],
+  )
+)
 
 == MACA
 The MACA dataset is also available as NetCDF files and was downloaded as one NetCDF file per model/scenario/variable.  As discussed in the data sources section, the MACA dataset is available for multiple climate models and scenarios.  For this project, only one model (CNRM-CM5) was used for both RCP 4.5 and RCP 8.5 scenarios.  The variables used in this project are precipitation (`pr`, mm), daily maximum and minimum temperature (`tmmx`, `tmmn`, in Kelvin).
