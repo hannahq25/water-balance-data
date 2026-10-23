@@ -44,26 +44,32 @@
 
 // = Background
 = Data Sources
-== Daily Historical Water Balance Products for the CONUS:
- A gridded daily historical water balance dataset covering the Continental United States @Tercek2023. The dataset was originally developed under the National Park Service Inventory and Monitoring Program and the National Park Service Climate Change Response Program. Version 1.5, the version currently available online, provides daily historic data (1980–2024) on #link("https://search.earthdata.nasa.gov/search?q=C2674700048-LPCLOUD")[NASA's Earthdata database] or an #link("https://npwbanalres.s3.us-west-2.amazonaws.com/index.html")[Amazon S3 bucket]. @HistBalanceData
+This project explores a collection of water and climate datasets to evaluate the ability to predict runoff under non-stationary climate and land use environments. In order to evaluate these, the project will combine and synthesize data from the following sources. 
+== Daily Historical Water Balance Dataset (Daily Water Balance):
+ The primary model-created dataset used as part of this project is a gridded daily historical water balance dataset covering the continental United States (CONUS) @Tercek2023. The dataset was originally developed under the National Park Service Inventory and Monitoring Program and the National Park Service Climate Change Response Program. Version 1.5, the version currently available online, provides daily historic data (1980–2024) on #link("https://search.earthdata.nasa.gov/search?q=C2674700048-LPCLOUD")[NASA's Earthdata database] or an #link("https://npwbanalres.s3.us-west-2.amazonaws.com/index.html")[Amazon S3 bucket]. @HistBalanceData
 
-== Future NPS Gridded Water Balance Model
- Future conditions of the aforementioned water balance dataset are available as 30-year averages (2040–2069 and 2070–2099, under both RCP 4.5 and RCP 8.5 #footnote[Representative Carbon Pathway 4.5 and 8.5 (scenarios with radiative forcing of 4.5 and 8.5 W/m^2 in 2100, respectively)]) for an assortment of climate models from a second Amazon S3 bucket @FutureBalanceData. Many references cite a THREDDS server for the water balance data; however, that server is no longer valid.
-
-== Annual National Land Cover Database Collection 1.2 
- A database by the USGS that applies geospatial deep learning algorithms to the Landsat satellite imagery record to classify land cover and surface change characteristics across the US on an annual basis, beginning in 1985. The Land Cover Classification and Fractional Impervious Surface products will be most relevant to this project. The data is available to view and download through multiple platforms, including the MRLC Web Viewer @MRLCViewer.
-
-== U.S. Climate Resilience Toolkit Climate Explorer
- A tool built by the EPA, NASA, NOAA, and USGS and hosted by the National Environmental Modeling and Analysis Center (NEMAC) at the University of North Carolina Asheville. The tool provides historical climate conditions across the US based on observations at weather stations and projected climate conditions based on global climate models for the Coupled Model Intercomparison Project Phase 5 (CMIP5) for the RCP 4.5 and RCP 8.5 emissions scenarios. Annual, locality-specific data can be downloaded through the online Climate Explorer tool @ClimateExplorer. 
+== Future Conditions Water Balance Dataset (Future Water Balance)
+ Tercek et al (2023) also used the same model method to project the data under various climate change scenarios and climate change models. These are available as 30-year averages (2040–2069 and 2070–2099, under both Representative Concentration Pathway (RCP) 4.5 and RCP 8.5 #footnote[Representative Concentration Pathway 4.5 and 8.5 (scenarios with radiative forcing of 4.5 and 8.5 W/m^2 in 2100, respectively)]) for an assortment of climate models from a second Amazon S3 bucket @FutureBalanceData. Many references cite a THREDDS server for the water balance data; however, that server is no longer valid.  The dataset is also available for CONUS.
 
 == GridMET 
- Daily gridded meteorological data at about 4 km resolution @abatzoglou2013 @GridMETwebsite. This is the same precipitation and temperature forcing used by the water balance model. Using it for the curve number calculation keeps the two runoff estimates directly comparable. 
+ Version 1.5 of the Daily Water Balance dataset was developed using climate data available from Climatology Lab's GridMET dataset@abatzoglou2013 @GridMETwebsite. GridMET is a 4-km gridded daily time series dataset from 1979 through the present for CONUS. While the focus and calibration of the dataset is climate variables such as precipitation and temperature, Climatology Lab also stores terrain data on a similar grid and spatial domain that can be used for modeling purposes. 
 
-== SSURGO (Soil Survey Geographic Database) 
- The USDA NRCS soil database provides hydrologic soil groups (A–D), which are combined with land cover to assign curve numbers. 
+ == Multivariate Adaptive Constructed Analogs (MACA)
+ Climatology Lab has also developed a downscaled future conditions dataset MACA.  The MACA datasets downscale an assortment of climate models under both RCP 4.5 and RCP 8.5 to a 4-km grid for CONUS at a daily time interval.  For this project, the  MACAv2-METDATA dataset was used. This dataset was trained on the GridMET data and therefore should minimize biases between the historical and future conditions datasets.  Because of the significant amount of data available, this project utilized only. one climate model data available from MACA, CNRM-CM5.  The MACA dataset is available through the Climatology Lab website @MACAwebsite.
 
-== USGS Water Data for the Nation (formerly NWIS) 
- Daily mean discharge from a USGS stream gage at the outlet of the study watershed provides observed streamflow to validate the modeled runoff. The watershed boundary and drainage area will be obtained from USGS StreamStats @StreamStatsWebsite.
+ == U.S. Climate Resilience Toolkit Climate Explorer (Climate Explorer)
+ Because typically ensemble data is utilized for climate projections, the MACA data will be supported by annual ensemble data summarized for a county in Climate Explorer. A tool built by the Environmental Protection Agency (EPA), National Aeronautics and Space Administration (NASA), National Oceanic and Atmospheric Administration (NOAA), and the US Geological Survey (USGS)and hosted by the National Environmental Modeling and Analysis Center (NEMAC) at the University of North Carolina Asheville. The tool provides historical climate conditions across the US based on observations at weather stations and projected climate conditions based on global climate models for the Coupled Model Intercomparison Project Phase 5 (CMIP5) for the RCP 4.5 and RCP 8.5 emissions scenarios. Annual, locality-specific data can be downloaded through the online Climate Explorer tool @ClimateExplorer. 
+
+ == Soil Survey Geographic Database (SSURGO)
+SSURGO is a database with soil property data collected by the National Cooperative Soil Survey across CONUS.  While the dataset has been updated over the years, there is no time dimension to the data unlike the other datasets discussed above.  The dataset categories areas spatially as a soil type and then provides tables detailing the properties of that soil type.  The two primary variables that will be used as part of this project are the Hydrologic Soil Group and the Available Water Storage.  Both variables express the infiltration capacity of the soil type.  Hydrologic Soil Group expresses the soil type as either A, B, C, or D with A being the most permeable and D being the least permeable.  Available Water Storage expresses the amount of water that can be stored for use by plants up to a certain depth in the soil and stores the value in mm, typically ranging between 0 and 250 mm.  Both variables are stored within the Map Unit Aggregated Attribute (muaggatt) table of a SSURGO database. SSURGO data is available in statewide datasets from a Natural Resources Conservation Service website @SSURGO. 
+
+== Annual National Land Cover Database Collection 1.2  (NLCD)
+ While not utilized in the Daily Water Balance, the other major variable  typically used when evaluating infiltration capacity is a land use.  Land use data predicts infiltration capacity by incorporating average impervious surfaces (where no infiltration is possible) as well as different predominant vegetative cover which impacts evapotranspiration.  The NLCD dataset is a database by the USGS that applies geospatial deep learning algorithms to the Landsat satellite imagery record to classify land cover and surface change characteristics across CONUS on an annual basis, beginning in 1985. The Land Cover Classification and Fractional Impervious Surface products will be most relevant to this project. The data is available to view and download through multiple platforms, including the MRLC Web Viewer @MRLCViewer.
+
+== USGS Water Data for the Nation (UGSS Gage Data)
+ While the Daily Water Balance dataset estimates runoff, it will be critical to validate the model results against observed runnoff.  Observed runoff can be estimated from stream gages.  The USGS collects and distributes stream gage data for gages across CONUS.  Each gage has a unique site number and will have varying period of record and data collected.  For this project, the daily mean discharge was incorporated as the best dataset to use to valide the Daily Water Balance runoff estimates.  The USGS maintains a website for each gage and users can obtain data directly through the website or other Application Programming Interfaces (APIs).  For example, the USGS Gage 02207120, Yellow River at GA 124, Near Lithonia, GA, has daily mean discharge for April 26, 1996 to present @02207120
+
+ For each gage the USGS also maintains the spatial watershed boundary in geojson format which can be accessed through its API @USGSAPI.
 \ \
  Additional datasets may be incorporated as the project progresses. 
 
@@ -117,7 +123,7 @@ The National Land Cover Database (NLCD) data is provided as Cloud-Optimized GeoT
     "22", "Developed, Low Intensity","81", "Pasture/Hay",
     "23", "Developed, Medium Intensity", "82", "Cultivated Crops",
     "24", "Developed, High Intensity","90", "Woody Wetlands",
-    "31", "Barren Land (Rock/Sand/Clay)", "95", "Emergent Herbacous Wetlands",
+    "31", "Barren Land (Rock/Sand/Clay)", "95", "Emergent Herbaceous Wetlands",
     "41", "Deciduous Forest",
   ),
 )
@@ -189,7 +195,7 @@ The dataset includes precipitation (`pr`, mm), daily maximum and minimum tempera
 == SSURGO (Soil Survey Geographic Database) 
 The SSURGO Data has two linked parts: (1) the spatial part as vector polygons (soil map units), downloaded as shapefiles from Web Soil Survey, and (2) the tabular part as a set of relational tables of soil properties, delivered as text files with a Microsoft Access template. A gridded version, gSSURGO, packages the same data as a 10 m raster in an ESRI file geodatabase for each state, which is easier to overlay with other grids.
 
-Static spatial data describes soil properties as mapped, with no time dimension. Mapping scales are typically 1:12,000 to 1:24,000, much finer than the other datasets. Each polygon is a map unit identified by a key (`mukey`). A map unit can contain several soil components, each with its own properties and share of the area. The tables are linked by keys: `mapunit` → `component` → `chorizon` (the soil layers). For this project, the key field is the hydrologic soil group (A, B, C, D, or dual groups like A/D), which ranks soils by how easily water infiltrates. The muaggatt table has a ready-made dominant hydrologic group per map unit (`hydgrpdcd`). Combined with NLCD land cover, it sets the curve number. 
+Static spatial data describes soil properties as mapped, with no time dimension. Mapping scales are typically 1:12,000 to 1:24,000, much finer than the other datasets. Each polygon is a map unit identified by a key (`mukey`). A map unit can contain several soil components, each with its own properties and share of the area. The tables are linked by keys: `mapunit` → `component` → `chorizon` (the soil layers). For this project, the key table is muaggatt which stores the hydrologic soil group per map unit (`hydgrpdcd`) and the available water storage capacity (`aws150`). Both of these variables are use to calculate the infiltration capacit of the soil.
 
 == USGS Water Data for the Nation (formerly NWIS) 
 The Water Data for the Nation dataset is a tabular time series, downloadable as CSV, tab-delimited text, or JSON. This can be obtained from the Water Data for the Nation website or programmatically with the USGS dataretrieval Python package. The dataset provides point data measured at one gage location as a daily time series, with many gages having records going back decades. 
