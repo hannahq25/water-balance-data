@@ -108,10 +108,9 @@ Version 1.5 of the water balance dataset was developed from daily meteorological
 The future water balance data is available as Georeferenced Tagged Image File Format (GeoTIFF) files summarized as the 30-year means. A GeoTIFF file embeds georeferencing information within a TIFF image file. Each GeoTIFF represents a separate variable, similar to the variables in the historic dataset (rain, runoff, pet, etc.), and each pixel of the GeoTIFF stores a value for the variable for a particular georeferenced location. 
 
 == GridMET
-The gridMET data are available as NetCDF files, usually one file per variable per year, on a regular latitude–longitude grid in geographic coordinate system World Geodetic System 1984 (WGS84). 
+The gridMET data are available as NetCDF files, usually one file per variable per year, on a regular latitude–longitude grid in geographic coordinate system World Geodetic System 1984 (WGS84). The GridMET dataset spans the years 1979 to the present.
 // This is also available through Google Earth Engine. Gridded daily time series covering the contiguous US from 1979 to the present, at about 4 km resolution (1/24°). It blends the spatial detail of Parameter-elevation Regressions on Independent Slopes Model (PRISM) climate data with the daily timing of National Land Data Assimilation System Phase 2 (NLDAS-2) reanalysis.
 
-<<<<<<< HEAD
 The dataset includes precipitation, daily maximum and minimum temperature, which are the primary climate variables for the project. Other variables, that may be used as part of the project, included in the dataset such as srad, vpd and pdsi. The table below lists the variables used in this project.
 
 #figure(
@@ -128,9 +127,6 @@ The dataset includes precipitation, daily maximum and minimum temperature, which
   [`pdsi`],[Palmer Drought Severity Index (ten-day severity indicator)],[none],
   )
 )
-=======
-The dataset includes precipitation (`pr`, in mm), daily maximum and minimum temperature (`tmmx`, `tmmn`, in Kelvin), relative and specific humidity, solar radiation, wind speed, and reference evapotranspiration. The project mainly uses precipitation and temperature. 
->>>>>>> 536fe24536929fa6df75404f0548738d68592998
 
 == MACA
 The MACA dataset is also available as NetCDF files and was downloaded as one NetCDF file per model, per scenario, per variable.  As discussed in @data-sources, only one climate model (CNRM-CM5) was used for both RCP 4.5 and RCP 8.5 scenarios.  The variables used in this project are precipitation (`pr`, in mm), daily maximum and minimum temperature (`tmmx`, `tmmn`, in Kelvin).
@@ -269,5 +265,28 @@ Trendlines were fitted to the annual mean discharge values to determine if there
   placement: top,
   scope: "parent",
   )
+
+== Precipitation
+
+The gridMET precipitation variable is used in the Daily Water Balance model and is therefore explored further. @mean-daily-precip sshows the annual mean daily precipitation from 1985 to 2024 to correspond with the general temporal data availability for other datasets used in this project. The annual mean daily precipitation is calculated by aggregating the daily precipitation over GridMET 4-km grids that have centroids within a watershed. If no grid centroids are located within a watershed (such as smaller watersheds), the grids closest to a watershed are allocated to that watershed. This approach is also used for other variables from the GridMet dataset. The bold line is the average across the 15 watersheds. The thin grey lines are the individual basins and track each other closely. The shaded band spans one standard deviation above and below the trend line of the annual data scattered about the trend line. The band is included to assess whether an apparent trend is larger than ordinary year-to-year variation, in comparing the total rise against one standard deviation. 
+
+For annual mean daily precipitation, the rise across the data record is smaller than one standard deviation of the scatter, so no trend can be distinguished from the noise, even though the fitted line does slope upward.  
+
+#figure(
+  caption: [Mean Daily Precipitation Trends for 15 Watersheds in Gwinnett County, GA],
+  image("figures/Mean_Daily_Precip.png", width: 100%),
+  ) <mean-daily-precip>
+
+@max-daily-precip shows the annual maximum daily rainfall, where the increasing trend is more visible. The annual maximum rainfall rises by approximately 7.7 mm per decade. The total precipitation is therefore roughly unchanged while the heaviest precipitation events become more intense. Because peak flows and runoff response depend on rainfall intensity rather than annual depth, this distinction is relevant to the runoff modeling.
+
+#figure(
+  caption: [Mean Daily Precipitation Trends for 15 Watersheds in Gwinnett County, GA],
+  image("figures/Max_Daily_Precip.png", width: 100%),
+  ) <max-daily-precip>
+
+== Temperature
+
+
+== Infiltration Capacity
 
  = Predictive Modeling 
