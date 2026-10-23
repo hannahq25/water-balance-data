@@ -41,6 +41,7 @@
 #show link: underline
 #show raw: set text(font: "DejaVu Sans Mono", size: 0.8em)
 #show table: set par(justify: false)
+#set math.equation(numbering: none)
 
 // = Background
 = Data Sources <data-sources>
@@ -238,24 +239,15 @@ Analyzing runoff and stream flow requires the precision of daily data. However, 
 
 Although data in the datasets span the years 1950 to 2100, most of the data is only available between 1985 to 2024 for historical datasets and from 2025 to 2099 for future datasets.  Therefore this project will focus on those two time periods.  Most of the gage streamflow datasets do not begin until the mid-2000s, so much of the predictive modeling that relies on the stream gage data will be limited to the 20-year period between 2000 and 2025.
 
-= Project Proposal
-
-This project will compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will analyze the precipitation, evapotranspiration, soil infiltration, and temperature to understand the impacts these parameters have on runoff and to determine how changes in surface and climate conditions could impact the balance of water within the ecosystem.  
-
-The project will evaluate impacts in urbanization by combining the NLCD land cover classifications with the SSURGO hydrologic soil groups to produce an Soil Conservation Service (SCS) curve number (CN).  CN is typically used in hydrologic modeling to estimate runoff during a specific storm event and can be combined with the daily rainfall data to estimate the runoff in an urbanized environment. 
-
-Both estimates will be validated against gage discharge converted to runoff depth. If observed streamflow and CN runoff both increase over time while the water balance runoff does not, the increase can be attributed to urbanization rather than climate as long as climate-driven storm intensity is not a factor. 
-
-A machine learning model will be used as a predictive element using land cover, impervious fraction, precipitation, temperature and the water balance model’s outputs to predict observed runoff. The model will then predict runoff under four cases: historical land cover with historical climate (baseline), future land cover with historical climate, and historical land cover  with projected RCP 4.5 and RCP 8.5 climate, with future land cover with projected RCP 4.5 and RCP 8.5 climate. Future land cover may be extrapolated from Annual NLCD trends. Comparing these results with the future water balance projections will show how much future runoff depends on urbanization versus climate. 
- = Exploratory Data Analysis
+= Exploratory Data Analysis
 
 == Runoff and Streamgage
 
-The daily mean discharge data was obtained from US Geological Survey (USGS) for the 14 streamgages in Gwinnett County, Georgia. The Wildcat Creek streamgage was excluded, since its recorded data (1953 – 1982) lies outside of the period scope of study (1985 -present). Streamgage data is the observed waterflow outside of a watershed, normally given by the USGS as daily values.  
+The daily mean discharge data was obtained from US Geological Survey (USGS) for the 14 streamgages in Gwinnett County, Georgia. The Wildcat Creek streamgage was excluded, since its recorded data (1953 – 1982) lies outside of the period scope of study (1985 -present). Streamgage data is the observed waterflow at the outlet of a watershed, normally given by the USGS as daily values.  
 
 The raw data file for each streamgage from USGS contains the date, corresponding mean discharge in cubic feet per second (ft3/s), and a date-value qualification value. The qualification codes include A (approved for publication), e (value has been estimated), R (records were revised), and P (provisional data subject to revision). The compiled data disregarded the provisional data and only retained the approved data. The days without a discharge value were also disregarded. Additionally, years with incomplete data, either: (a) not having a complete year (year with less than 360 days of data), (b) having no data at all, were also disregarded. 
 
-The daily discharge data was converted into runoff (mm/day) by dividing it by the drainage area of the watersheds, obtained from (our reference paper). This will allow the streamgage data to be comparable to the gridded water balance and precipitation data. These were further converted into annual mean discharge, annual total runoff, and annual peak daily runoff by streamgage by year. The annual mean discharge is the average daily mean discharge value by year, annual total runoff is the sum of the daily runoff depths by year, and annual peak daily discharge is the largest recorded daily runoff depth in a year. 
+The daily discharge data was converted into runoff (mm/day) by dividing it by the drainage area of the watersheds @alenbauch. This will allow the streamgage data to be comparable to the gridded water balance and precipitation data. These were further converted into annual mean discharge, annual total runoff, and annual peak daily runoff by streamgage by year. The annual mean discharge is the average daily mean discharge value by year, annual total runoff is the sum of the daily runoff depths by year, and annual peak daily discharge is the largest recorded daily runoff depth in a year. 
 
 Trendlines were fitted to the annual mean discharge values to determine if there is an increasing or decreasing trend for discharge per gage. The resulting trendlines are relatively flat, with low coefficient of determination (R2) values, ranging from 0.00 to 0.12. This means that yearly variability outweighs long-term changes based on observed discharge. However, the inconsistent availability of data among gage types for some watersheds (e.g., Yellow River near Snellville with a 16-year gap and other gages having complete records only from 2002), may limit the detection of long-term trends. This can be supported by seeing that Suwanee Creek, with continuous data from 1985 to 2023, showed one of the largest increases in annual mean discharge over time. Thus, the streamgage data should be interpreted with precipitation data to determine if the discharge has changed outside of wet or dry years.
 
@@ -289,4 +281,92 @@ For annual mean daily precipitation, the rise across the data record is smaller 
 
 == Infiltration Capacity
 
+For nearly all watersheds in Gwinnett County, the NLCD data shows a rapid increase in fractional impervious areas between 1985 and the early 2000's, followed by a slower rate of growth after 2010 (see @fctimpgraph). Percentages of developed land cover follow a similar trend as fractional impervious area (see @medintdevgraph). This trend is mirrored by declines in deciduous forest land cover that plummet until the early 2000's and decrease more gradually decreased after (see @decforestgraph). These patterns \indicate a surge in urbanization, including land development and deforestation, through the early 2000's and steady urbanization from the early 2000's to the present.
+
+Rather than tracking all land cover classes over time, the SCS Curve Number may be used to capture the totality of land use changes across all land use types and relate them to runoff and infiltration. According to NRCS' Technical Release 55 (TR-55) @tr55, runoff may be modeled as a function of precipitation and watershed characteristics using the SCS Curve Number method, which states:
+
+$ Q &= frac(\(P-I_a\)^2, \(P-I_a\)+S) \
+  I_a &= 0.2S \
+  S &= frac(1000, "CN") - 10 $
+
+where $Q$ is runoff, $P$ is rainfall, $S$ is potential maximum retention after runoff begins, $I_a$ is initial abstraction, with all units in inches. CN is the curve number, a dimensionless integer between 0 and 100 that represents the potential for rainfall to run off rather than infiltrate. Given the importance of the CN in modeling runoff, a raster of CN values was created in this project from the NLCD and SSURGO rasters. 
+
+The US Army Corps of Engineers (USACE) provides a lookup table for CN values based on NLCD land cover classes and hydrologic soil group (HSG) @USACEtable. The lookup table is shown in @cn_table.
+
+#figure(
+    caption: [Curve Number Lookup Table],
+    table(
+      columns: (25%,auto, 10%, 10%, 10%, 10%,),
+      align: (center+horizon, left+horizon, center+horizon, center+horizon, center+horizon, center+horizon),
+      table.header(
+        table.cell(rowspan:2)[*Land Cover Value*],
+        table.cell(rowspan:2)[*Land Cover Class*], 
+        table.cell(colspan:4)[*Hydrologic Soil Group*], 
+        [*A*], [*B*], [*C*], [*D*]),
+      "11", "Open Water", "98", "98", "98", "98",
+      "12", "Perennial Ice/Snow", "98", "98", "98", "98",
+      "21", "Developed, Open Space", "49", "69", "79", "84",
+      "22", "Developed, Low Intensity", "57", "72", "81", "86",
+      "23", "Developed, Medium Intensity", "61", "75", "83", "87",
+      "24", "Developed, High Intensity", "81", "88", "91", "93",
+      "31", "Barren Land (Rock/Sand/Clay)", "78", "86", "91", "93",
+      "41", "Deciduous Forest", "45", "66", "77", "83",
+      "42", "Evergreen Forest", "25", "55", "70", "77",
+      "43", "Mixed Forest", "36", "60", "73", "79",
+      "52", "Shrub/Scrub", "55", "72", "81", "86",
+      "71", "Grassland/Herbaceous","50", "69", "79", "84",
+      "81", "Pasture/Hay", "49", "69", "79", "84",
+      "82", "Cultivated Crops", "67", "78", "85", "89",
+      "90", "Woody Wetlands", "30", "58", "71", "78",
+      "95", "Emergent Herbaceous Wetlands","30", "58", "71", "78"
+    ),
+  ) <cn_table>
+
+  The SSURGO dataset provides the dominant HSG(s) for each 10-meter grid cell in the raster. The raster was aggregated to 30-meter grid cells to share the same spatial domain as the NLCD land cover dataset. Aggregation was accomplished by averaging HSGs and rounding ties up, i.e. to the HSG that yields a higher CN. For example, the average of “A” and “B” is “B”, the average of “A” and “C” is “B”, and the average of “A” and “D” is “C”. Each 30-meter grid cell was assigned a CN using its land cover class, its HSG, and the USACE lookup table. The CNs were then summarized for each watershed using the averaging technique described above, as well as by extracting minimum, maximum, and median values.
+  
+ Overall, the watersheds have steadily trended toward higher average CNs (see @cngraph), which predict lower rates of infiltration and higher rates of runoff during rainfall events. For some watersheds, the average CN has been stable for the past one or two decades, which is consistent with lessened changes in fractional impervious area, developed land cover, and forest cover in the time frame.
+  
+  #figure(
+  caption: [Mean Fractional Impervious Area by Watershed in Gwinnett County, GA],
+  image("figures/land-cover/FctImp_meanByWatershed.png", height: 100%),
+) <fctimpgraph>
+
+#figure(
+  caption: [Percentage of Medium Intensity Developed Land Cover by Watershed in Gwinnett County, GA],
+  image("figures/land-cover/DevelopedMediumIntensity_percentByWatershed.png", height: 100%),
+) <medintdevgraph>
+
+#figure(
+  caption: [Percentage of Deciduous Forest Land Cover by Watershed in Gwinnett County, GA],
+  image("figures/land-cover/DeciduousForest_percentByWatershed.png", height: 100%),
+) <decforestgraph>
+
+#figure(
+  caption: [Mean Curve Number by Watershed in Gwinnett County, GA],
+  image("figures/land-cover/CN_meanByWatershed.png", height: 100%),
+) <cngraph>
+
+Likewise, meatmaps reveal stark differences in fractional impervious area between 1985 and 2024, as well as the spatial distribution of urbanization.
+
+#figure(
+  image("figures/land-cover/FctImp1985.png", width: 100%),
+)
+
+#figure(
+  caption: [Fractional Impervious Area in Gwinnett County, GA in 1985 vs 2024],
+  image("figures/land-cover/FctImp2024.png", width: 100%),
+)
+
+ In addition to land use and impervious area, the other factor which determines infiltration capacity for an area is the soil type. The SSURGO data is the only input in determining the maximum potential storage of rainwater within the water balance dataset. It is derived from the available water storage variable (AWS) variable within the SSURGO dataset and estimates the amount of water that can be stored within the soil that is available to plants. While the maximum AWS used for the water balance dataset is not provided, in general it is possible to estimate the value used by taking the maximum value overtime for each grid cell.  By visual comparison on a sample watershed for USGS gage 02207120, the datasets do generally align as shown below.  However it should be noted that differences will exist because reprojection methods when developing the water- balance datasets are not publicly available.  In general, it appears the maximum soilwater value is higher than the value this project estimated from the SSURGO data, indicated using the maximum soiilwater would be an appropriate way to estimate the maximum soil bucket input value.  
+
  = Predictive Modeling 
+This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
+Multivariate regression will also be used to analyze the strength and confidence of correlations between the climate and the urbanization metrics as independent variables and runoff or stream flow as the dependent variable. The regression optimization model will assume linear relationships for all variables except where theory, industry standards, or analysis results establish a clear nonlinear relationship, such as the relationship between CN and runoff in the SCS equation.
+The above models will then be used to predict runoff under four cases: 
+1.	historical land cover with historical climate (baseline)
+2.	future land cover with historical climate
+3.	historical land cover with projected RCP 4.5 and RCP 8.5 climate
+4.	future land cover with projected RCP 4.5 and RCP 8.5 climate
+Future land cover may be extrapolated from annual NLCD trends. Comparing these results with the future water balance projections will show the influence of urbanization versus climate on future runoff.
+
+In comparing mean fractional impervious area and minimum temperature, it is seen that both variables increase over the temporal domain, as shown in Figure I-1, though not at a constant rate. Mean fractional impervious area appears to increase at a greater rate roughly until 2005, after which it slows substantially. Minimum temperature rises unevenly, with most of the increase showing up around 2004. Because both variables are net-increasing across the period as a whole there is cause to suspect they may confound each other. This is directly relevant to the project's central question of how much runoff change is attributable to climate versus land use. The differing shapes of the two trends, in particular the period after 2005, where impervious area plateaus while temperature continues to rise, may offer a means of distinguishing them. Methods to do so will be explored further.
