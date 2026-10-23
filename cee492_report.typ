@@ -258,6 +258,33 @@ Trendlines were fitted to the annual mean discharge values to determine if there
   scope: "parent",
   )
 
+Processing the stream average daily discharge (cfs)  into an average runoff amount per square mile per day per year  (mm/year) facilitates comparison to the water balance dataset.  The  gridded water balance daily dataset was also processed into an average value per day over per  year over the entire watershed.  In comparing the two datasets, it is clear the gage data has significantly more variability between the gages than the water balance dataset as shown in the figure below.  
+
+#figure(
+  caption: [Standard Deviation of Runoff across Watersheds],
+  image("figures/stdev.png", width: 100%),
+)
+
+The water balance dataset incorporates the spatial variability of the rainfall as well as the variability in infiltration capacity of just the underlying soils but does not incorporate land use variability or other hydrologic factors such as storage ponds within the watershed.  So it is expected that the real-world data would exhibit more variability than the modeled data.  One notable difference is higher variability in the mid 2010s in the water balance datasets. This could indicate this year is one where there was more spatial variability in the rainfall datasets across the 15 watersheds. 
+
+In addition to providing a comparison of data, it is important to have confidence that the datasets can be evaluated jointly as part of the predictive modeling.  The figure below compares the estimated annual daily runoff for gage 02207120 for both the gage data and the water balance data. 
+
+#figure(
+  caption: [Comparison of Annual Runoff, Stream Gage versus Water Balance],
+  image("figures/AnnualGagevsWaterBalance.png", width: 100%),
+)
+
+From the figure it is clear they generally follow a similar underlying pattern suggesting the water balance dataset is reasonably estimating runoff.  This is a similar pattern that can be seen in the other watersheds evaluated.  
+
+In addition to annual data, the project developed daily summaries for each of the watersheds.  In the figure below, runoff is summarized for the same gage watershed.
+
+#figure(
+  caption: [Comparison of Daily Runoff, Stream Gage versus Water Balance],
+  image("figures/DailyGagevsWaterBalance.png", width: 100%),
+)
+
+As expected, the gage data runoff peaks approximately a day after the water balance data does because of the travel time between the location of the rainfall and the stream gage.  However, the overall volumes do not align, in most cases the water balance data is predicting more runoff than actually was measured at the stream gage.  This could indicate the water balance dataset is not doing a reasonable job of assessing other factors that contribute to the amount of runoff that are typically considered when developing a rainfall runoff model, specifically the initial loss or initial abstraction which is often due to small irregularities in ground surface.  
+
 == Precipitation
 
 The gridMET precipitation variable is used in the Daily Water Balance model and is therefore explored further. @mean-daily-precip shows the annual mean daily precipitation from 1985 to 2024 to correspond with the general temporal data availability for other datasets used in this project. The annual mean daily precipitation is calculated by aggregating the daily precipitation over GridMET 4-km grids that have centroids within a watershed. If no grid centroids are located within a watershed (such as smaller watersheds), the grids closest to a watershed are allocated to that watershed. This approach is also used for other variables from the GridMet dataset. The bold line is the average across the 15 watersheds. The thin grey lines are the individual basins and track each other closely. The shaded band spans one standard deviation above and below the trend line of the annual data scattered about the trend line. The band is included to assess whether an apparent trend is larger than ordinary year-to-year variation, in comparing the total rise against one standard deviation. 
@@ -391,7 +418,13 @@ Likewise, meatmaps reveal stark differences in fractional impervious area betwee
   image("figures/land-cover/FctImp2024.png", width: 100%),
 )
 
- In addition to land use and impervious area, the other factor which determines infiltration capacity for an area is the soil type. The SSURGO data is the only input in determining the maximum potential storage of rainwater within the water balance dataset. It is derived from the available water storage variable (AWS) variable within the SSURGO dataset and estimates the amount of water that can be stored within the soil that is available to plants. While the maximum AWS used for the water balance dataset is not provided, in general it is possible to estimate the value used by taking the maximum value overtime for each grid cell.  By visual comparison on a sample watershed for USGS gage 02207120, the datasets do generally align as shown below.  However it should be noted that differences will exist because reprojection methods when developing the water- balance datasets are not publicly available.  In general, it appears the maximum soilwater value is higher than the value this project estimated from the SSURGO data, indicated using the maximum soiilwater would be an appropriate way to estimate the maximum soil bucket input value.  
+ In addition to land use and impervious area, the other factor which determines infiltration capacity for an area is the soil type. The SSURGO data is the only input in determining the maximum potential storage of rainwater within the water balance dataset. It is derived from the available water storage variable (AWS) variable within the SSURGO dataset and estimates the amount of water that can be stored within the soil that is available to plants. While the maximum AWS used for the water balance dataset is not provided, in general it is possible to estimate the value used by taking the maximum value overtime for each grid cell.  By visual comparison on a sample watershed for USGS gage 02207120, the datasets do generally align as shown below.  However it should be noted that differences will exist because reprojection methods when developing the water- balance datasets are not publicly available.  In general, it appears the maximum soilwater value is higher than the value this project estimated from the SSURGO data, indicated using the maximum soiilwater would be an appropriate way to estimate the maximum soil bucket input value. 
+
+#figure(
+  caption: [SSURGO Available Water Storage (left), Daily Water Balance Maximum Soilwater (right)],
+  image("figures/SSURGOvsSoilwater.png", width: 100%),
+)
+The Curve Number (CN) was used to determine the increase in urbanization in Gwinnett County. The average CN per year per watershed (site location) was used to represent urbanization and was plotted against time with the average mean discharge for each watershed. While the CN is seen to increase over time, the average mean discharge is seen to be controlled by the wet and dry periods, indicated by the lack of visually increasing or decreasing trends over time.
 
  = Predictive Modeling 
 This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
