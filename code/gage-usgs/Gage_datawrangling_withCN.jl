@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.4
+# v1.1.0
 
 using Markdown
 using InteractiveUtils
@@ -36,7 +36,7 @@ end
 begin
 	gage_number = ["02205865", "02206500", "02207120", "02207185", "02207385",
 	                "02207400", "02208150", "02217274", "02218565", "02334480",
-	                "02334578", "02334885", "02335350", "02336030"]
+	                "02334578", "02334885", "02335350", "02336030", "02330450"]
  
 	site_names = ["Sweetwater Creek",
 	              "Yellow River near Snellville",
@@ -51,7 +51,8 @@ begin
 	              "Level Creek",
 	              "Suwanee Creek",
 	              "Crooked Creek",
-	              "North Fork Peachtree Creek"]
+	              "North Fork Peachtree Creek",
+	              "Chattahoochee River at Helen"]
  
 	station_names = ["Sweetwater Creek at Club Drive near Lilburn",
 	                 "Yellow River near Snellville",
@@ -66,13 +67,13 @@ begin
 	                 "Level Creek at Suwanee Dam Road, near Suwanee",
 	                 "Suwanee Creek at Suwanee",
 	                 "Crooked Creek near Norcross",
-	                 "North Fork Peachtree Creek at Graves Road, near Doraville"]
+	                 "North Fork Peachtree Creek at Graves Road, near Doraville",
+	                 "Chattahoochee River at Helen"]
 
-	# from the paper
 	gage_area = [20.98, 136.06, 161.41, 10.06, 17.26, 8.18, 30.80,
-	             1.31, 5.65, 9.37, 5.06, 47.09, 8.87, 1.53]   # mi2
+	             1.31, 5.65, 9.37, 5.06, 47.09, 8.87, 1.53, 44.7]   # mi2
  
-	within_watershed = ["Yes", "Yes", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No"]
+	within_watershed = ["Yes", "Yes", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No", "No"]
  
 	number_of_gages = length(gage_number)
  
@@ -243,7 +244,7 @@ begin
 		push!(hydro_figures, fig)
 	end
 
-	all_hydrographs = plot(hydro_figures..., layout = (7, 2), size = (2000, 2800), link = :all)
+	   	all_hydrographs = plot(hydro_figures..., layout = (8, 2), size = (2000, 3200), link = :all)
 
 	savefig(all_hydrographs, joinpath(figure_folder, "gage_figures.png"))
 	
@@ -307,7 +308,7 @@ begin
 		push!(urban_gage, fig)
 	end
 
-	all_time = plot(urban_gage..., layout = (7, 2), size = (1600, 2800),
+	all_time = plot(urban_gage..., layout = (8, 2), size = (1600, 3200),
 		legendfontsize = 7, left_margin = 10Plots.mm, right_margin = 10Plots.mm,
 		bottom_margin = 8Plots.mm)
 	savefig(all_time, joinpath(figure_folder, "urbanization and gage.png"))
@@ -342,7 +343,7 @@ StatsPlots = "~0.15.8"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.13.2"
+julia_version = "1.13.3"
 manifest_format = "2.1"
 project_hash = "7fd75ad190ce0e036a080f3c890d7ff48e2d03ba"
 
@@ -1163,7 +1164,7 @@ version = "1.11.0"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2026.8.13"
+version = "2026.10.20"
 
 [[deps.MuladdMacro]]
 deps = ["PrecompileTools"]
@@ -1258,7 +1259,7 @@ version = "2.0.3"
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
-version = "10.46.0+0"
+version = "10.47.0+0"
 
 [[deps.PDMats]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
