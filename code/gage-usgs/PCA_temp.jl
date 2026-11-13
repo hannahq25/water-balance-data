@@ -146,75 +146,24 @@ begin
 	ŷ_daily_pca[test] = ŷ_test_pca .* std(y_test) .+ mean(y_test)
 end
 
-# ╔═╡ 88eebe24-95da-4fb9-973c-19758a5d890e
-storms = let
-	P = daily.P_mm
-	n = length(P)
-
-	start_date = Date[]
-	storm_year = Int[]
-	rain = Float64[]
-	observed = Float64[]
-	predicted_all = Float64[]
-	predicted_pca = Float64[]
-
-	t = 1
-	while t <= n
-		if P[t] >= 1
-			s = t
-			while t < n && P[t + 1] >= 1
-				t = t + 1
-			end
-			window_end = t + 3
-			if sum(P[s:t]) >= 25 && window_end <= n && sum(P[(t + 1):window_end]) < 5
-				push!(start_date, daily.date[s])
-				push!(storm_year, daily.year[s])
-				push!(rain, sum(P[s:t]))
-				push!(observed, sum(daily.Q_mm[s:window_end]))
-				push!(predicted_all, sum(ŷ_daily_all[s:window_end]))
-				push!(predicted_pca, sum(ŷ_daily_pca[s:window_end]))
-			end
-		end
-		t = t + 1
-	end
-
-	storm_table = DataFrame(start = start_date, year = storm_year, rain_mm = rain,
-		observed_mm = observed, predicted_all_mm = predicted_all,
-		predicted_pca_mm = predicted_pca)
-	storm_table.test = [(yr - daily.year[1]) % 4 == 3 for yr in storm_table.year]
-	storm_table
-end
-
-# ╔═╡ 4ba2b28b-2308-424f-a37d-a7869f646daa
-begin
-	storms_train = storms[.!storms.test, :]
-	storms_test = storms[storms.test, :]
-
-	r2_storm = DataFrame(model = ["All predictors", "PCA, " * string(n_pc) * " components"],
-		train = [cor(storms_train.observed_mm, storms_train.predicted_all_mm)^2,
-			cor(storms_train.observed_mm, storms_train.predicted_pca_mm)^2],
-		test = [cor(storms_test.observed_mm, storms_test.predicted_all_mm)^2,
-			cor(storms_test.observed_mm, storms_test.predicted_pca_mm)^2],
-		test_rmse_mm = [sqrt(mean((storms_test.predicted_all_mm .- storms_test.observed_mm) .^ 2)),
-			sqrt(mean((storms_test.predicted_pca_mm .- storms_test.observed_mm) .^ 2))])
-end
-
 # ╔═╡ 3bd88e24-1ac9-4e14-a7e8-cde01a4e8f9e
 let
-	max_runoff = maximum(storms.observed_mm) * 1.05
+	max_runoff = maximum(y) * 1.05
 
-	all_plot = scatter(storms_train.observed_mm, storms_train.predicted_all_mm, color = :blue,
-		label = "train", xlabel = "Observed storm runoff (mm)",
-		ylabel = "Predicted storm runoff (mm)", legend = :topleft)
-	scatter!(all_plot, storms_test.observed_mm, storms_test.predicted_all_mm, color = :red,
-		markershape = :square, label = "test")
+	all_plot = scatter(y_train, ŷ_daily_all[train], color = :blue, markersize = 2,
+		markerstrokewidth = 0, alpha = 0.5, label = "train",
+		xlabel = "Observed daily runoff (mm)", ylabel = "Predicted daily runoff (mm)",
+		legend = :topleft)
+	scatter!(all_plot, y_test, ŷ_daily_all[test], color = :red, markershape = :square,
+		markersize = 2, markerstrokewidth = 0, alpha = 0.5, label = "test")
 	plot!(all_plot, [0, max_runoff], [0, max_runoff], color = :black, label = :none)
 
-	pca_plot = scatter(storms_train.observed_mm, storms_train.predicted_pca_mm, color = :blue,
-		label = "train", xlabel = "Observed storm runoff (mm)",
-		ylabel = "Predicted storm runoff (mm)", legend = :topleft)
-	scatter!(pca_plot, storms_test.observed_mm, storms_test.predicted_pca_mm, color = :red,
-		markershape = :square, label = "test")
+	pca_plot = scatter(y_train, ŷ_daily_pca[train], color = :blue, markersize = 2,
+		markerstrokewidth = 0, alpha = 0.5, label = "train",
+		xlabel = "Observed daily runoff (mm)", ylabel = "Predicted daily runoff (mm)",
+		legend = :topleft)
+	scatter!(pca_plot, y_test, ŷ_daily_pca[test], color = :red, markershape = :square,
+		markersize = 2, markerstrokewidth = 0, alpha = 0.5, label = "test")
 	plot!(pca_plot, [0, max_runoff], [0, max_runoff], color = :black, label = :none)
 
 	fig = plot(all_plot, pca_plot, layout = (1, 2), size = (1000, 470),
@@ -1594,8 +1543,6 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 # ╠═ddc6b007-9b51-4129-a44f-5d6ab6c21fc5
 # ╠═397e95b7-e725-49c8-bcb5-5100676ceb3d
 # ╠═8fb86760-add1-4962-832a-772ab3e548d3
-# ╠═88eebe24-95da-4fb9-973c-19758a5d890e
-# ╠═4ba2b28b-2308-424f-a37d-a7869f646daa
 # ╠═3bd88e24-1ac9-4e14-a7e8-cde01a4e8f9e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
