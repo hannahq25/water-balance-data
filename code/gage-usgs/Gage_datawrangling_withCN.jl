@@ -235,19 +235,22 @@ begin
 		mid_dates = Date.(Int.(years), 7, 1)
 		trend_line = intercept .+ slope .* years
 
-		# likely would need to remove or change the title ??
-		
-		fig = plot(gage_gage.date, gage_gage.discharge, yscale = :log10, label = "Daily mean discharge", title = site_names[x], xlabel = "Date", ylabel = "Discharge (ft³/s)")
+		fig = plot(gage_gage.date, gage_gage.discharge, yscale = :log10, label = "Daily mean discharge", title = site_names[x], xlabel = "Date", ylabel = "Discharge (ft³/s)", legend = false)
 		scatter!(fig, mid_dates, annual_means, color = :black, label = "Annual mean discharge")
 		plot!(fig, mid_dates, trend_line, color = :red, linewidth = 2, label = "Trend line")
 
 		push!(hydro_figures, fig)
 	end
 
-	   	all_hydrographs = plot(hydro_figures..., layout = (8, 2), size = (2000, 3200), link = :all)
+	legend_fig = plot([Date(2000, 1, 1)], [NaN], label = "Daily mean discharge",
+		framestyle = :none, legend = :left, legendfontsize = 10)
+	scatter!(legend_fig, [Date(2000, 1, 1)], [NaN], color = :black, label = "Annual mean discharge")
+	plot!(legend_fig, [Date(2000, 1, 1)], [NaN], color = :red, linewidth = 2, label = "Trend line")
+
+	all_hydrographs = plot(hydro_figures..., legend_fig, layout = (8, 2), size = (1000, 1500), link = :all, dpi = 300, titlefontsize = 10, guidefontsize = 8, tickfontsize = 8, left_margin = 12Plots.mm, top_margin = 2Plots.mm)
 
 	savefig(all_hydrographs, joinpath(figure_folder, "gage_figures.png"))
-	
+
 	all_hydrographs
 end
 
