@@ -150,25 +150,47 @@ end
 let
 	max_runoff = maximum(y) * 1.05
 
-	all_plot = scatter(y_train, ŷ_daily_all[train], color = :blue, markersize = 2,
+	all_plot = scatter(y_train, ŷ_daily_all[train], markersize = 3,
 		markerstrokewidth = 0, alpha = 0.5, label = "train",
 		xlabel = "Observed daily runoff (mm)", ylabel = "Predicted daily runoff (mm)",
-		legend = :topleft)
-	scatter!(all_plot, y_test, ŷ_daily_all[test], color = :red, markershape = :square,
-		markersize = 2, markerstrokewidth = 0, alpha = 0.5, label = "test")
-	plot!(all_plot, [0, max_runoff], [0, max_runoff], color = :black, label = :none)
+		legend = :topleft, dpi = 300, guidefontsize = 7, tickfontsize = 6,
+		legendfontsize = 6)
+	scatter!(all_plot, y_test, ŷ_daily_all[test], markershape = :square,
+		markersize = 3, markerstrokewidth = 0, alpha = 0.5, label = "test")
+	plot!(all_plot, [0, max_runoff], [0, max_runoff], label = :none)
 
-	pca_plot = scatter(y_train, ŷ_daily_pca[train], color = :blue, markersize = 2,
+	pca_plot = scatter(y_train, ŷ_daily_pca[train], markersize = 3,
 		markerstrokewidth = 0, alpha = 0.5, label = "train",
 		xlabel = "Observed daily runoff (mm)", ylabel = "Predicted daily runoff (mm)",
-		legend = :topleft)
-	scatter!(pca_plot, y_test, ŷ_daily_pca[test], color = :red, markershape = :square,
-		markersize = 2, markerstrokewidth = 0, alpha = 0.5, label = "test")
-	plot!(pca_plot, [0, max_runoff], [0, max_runoff], color = :black, label = :none)
+		legend = :topleft, dpi = 300, guidefontsize = 7, tickfontsize = 6,
+		legendfontsize = 6)
+	scatter!(pca_plot, y_test, ŷ_daily_pca[test], markershape = :square,
+		markersize = 3, markerstrokewidth = 0, alpha = 0.5, label = "test")
+	plot!(pca_plot, [0, max_runoff], [0, max_runoff], label = :none)
 
-	fig = plot(all_plot, pca_plot, layout = (1, 2), size = (1000, 470),
-		left_margin = 8Plots.mm, bottom_margin = 8Plots.mm, top_margin = 3Plots.mm)
+	plot!(all_plot, size = (400, 360))
+	savefig(all_plot, joinpath(figure_folder, "suwanee_regression_daily_all.png"))
+	plot!(pca_plot, size = (400, 360))
+	savefig(pca_plot, joinpath(figure_folder, "suwanee_regression_daily_pca.png"))
+
+	fig = plot(all_plot, pca_plot, layout = (1, 2), size = (800, 360), dpi = 300,
+		left_margin = 4Plots.mm, bottom_margin = 4Plots.mm)
 	savefig(fig, joinpath(figure_folder, "suwanee_pca_regression_daily.png"))
+	fig
+end
+
+# ╔═╡ 02fb080b-1c50-4d55-95dc-58eac9dd04ae
+let
+	sept = (daily.date .>= Date(2009, 9, 10)) .& (daily.date .<= Date(2009, 9, 30))
+	days = day.(daily.date[sept])
+
+	fig = plot(days, y[sept], linewidth = 2, label = "observed",
+		xlabel = "Day of September 2009", ylabel = "Daily runoff (mm)", legend = :topleft,
+		size = (400, 300), dpi = 300, guidefontsize = 7, tickfontsize = 6,
+		legendfontsize = 6)
+	plot!(fig, days, ŷ_daily_all[sept], linewidth = 2, label = "all four variables")
+	plot!(fig, days, ŷ_daily_pca[sept], linewidth = 2, linestyle = :dash, label = "PCA")
+	savefig(fig, joinpath(figure_folder, "suwanee_pca_sept2009.png"))
 	fig
 end
 
@@ -1544,5 +1566,6 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 # ╠═397e95b7-e725-49c8-bcb5-5100676ceb3d
 # ╠═8fb86760-add1-4962-832a-772ab3e548d3
 # ╠═3bd88e24-1ac9-4e14-a7e8-cde01a4e8f9e
+# ╠═02fb080b-1c50-4d55-95dc-58eac9dd04ae
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
