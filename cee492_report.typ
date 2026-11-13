@@ -535,7 +535,75 @@ The figure documents several impacts of the modeling approach.  First, it confir
 
  Overall while adding the weights, specifically the weights on two or more days, improved the accuracy of the model in predicting flow, it still does not result in a well-calibrated model reflecting that additional work is needed to reflect the complicated hydrologic system upstream of a gage.   
  == Multiple Linear Regression Model with a Gabor Transform 
- == Multiple Linear Regression Model with Principal Component Analysis 
+ == Multiple Linear Regression Model with Principal Component Analysis
+
+The model was developed for the Suwanee Creek at Suwanee gage (USGS Gage No. 02334885). The dependent variable is daily runoff depth in millimeters (mm), calculated from daily mean discharge and the watershed drainage area. The record extends from January 3, 1985, to June 10, 2024, and contains 14,404 consecutive days with no missing values. 
+
+For this model, four independent variables were used: (1) one-day precipitation, (2) two-day precipitation, (3) three-day precipitation, and (4) fractional impervious area. One-day precipitation represents watershed-average daily precipitation and was taken from the gridded water balance dataset. The two- and three-day precipitation show the sum of the current day's precipitation and the precipitation from one or two days prior. Meanwhile, the fractional impervious area is the mean fractional impervious area, taken from the land cover dataset.
+
+A principal component analysis (PCA) was applied to transform the independent variables into uncorrelated components before fitting the regression. Every fourth year of the record (1988, 1992, and so on through 2024) was withheld for testing, and the model was trained on the remaining years. This resulted in 10,948 days of training data and 3,456 days of testing data. Withholding every third and fifth year of record was also tested to determine if this sampling methodology is sensitive to the interval chosen. However, this did not significantly improve the regression results, so the middle value was chosen. 
+
+Whole years were withheld instead of random days, since streamflow has a more gradual daily change than a random fluctuation. Streamflow is highly dependent on precipitation and on the rate of drainage through the drainage network within the watershed, which causes flow from a single storm event to extend over several days. Randomly selecting a day may place data from the same storm event in both training and testing data and may cause the model to overperform. Each variable was then normalized to a mean of zero and a standard deviation of one using the normalization function from the lecture. 
+
+The PCA was performed by applying a singular value decomposition to the normalized training data. The loadings of the resulting principal components, which indicate the contribution of each independent variable to each component, are summarized in the table below.
+
+#figure(
+  table(
+    columns: (2fr, 1fr, 1fr, 1fr),
+    align: (left, center, center, center),
+    table.header([*Variable*], [*PC1*], [*PC2*], [*PC3*]),
+    [One-day precipitation], [−0.55], [0.02], [−0.78],
+    [Two-day precipitation], [−0.61], [0.02], [0.13],
+    [Three-day precipitation], [−0.57], [0.01], [0.61],
+    [Fractional impervious area], [−0.03], [−1.00], [−0.01],
+  ),
+  caption: [Principal component loadings for the Suwanee Creek watershed],
+) <pca-loadings>
+
+The loadings show how much each variable contributes to a component, where a value closer to 1 (or -1) indicates a large contribution and a value closer to 0 indicates a small contribution. The first principal component is weighted almost equally on the three precipitation variables and represents the overall amount of recent rainfall. The second component consists almost entirely of the fractional impervious area. The third component contrasts the one-day precipitation with the three-day precipitation and therefore represents the timing of the rainfall, that is, whether the rain fell on the same day or on the preceding days. Each component is a direction through the data, so its sign only indicates which way that direction points and is assigned arbitrarily by the PCA; therefore, this does not affect the results. 
+
+Two models were then fitted to the training data by least squares for comparison. The first uses the four normalized independent variables directly, and the second uses the three retained principal components:
+
+#v(0.6em)
+#align(center)[
+  #set par(justify: false)
+  #set text(hyphenate: false)
+  Runoff = β#sub[1] (One-day precipitation) + β#sub[2] (Two-day precipitation) + β#sub[3] (Three-day precipitation) + β#sub[4] (Fractional impervious area)
+]
+#v(0.6em)
+#align(center)[
+  Runoff = β#sub[1] (PC1) + β#sub[2] (PC2) + β#sub[3] (PC3)
+]
+#v(0.6em)
+
+The coefficient of determination for each model, calculated for both the training and testing data, is summarized in the table below.
+
+#figure(
+  table(
+    columns: (2fr, 1fr, 1fr),
+    align: (left, center, center),
+    table.header([*Model*], [*Daily $R^2$ (train)*], [*Daily $R^2$ (test)*]),
+    [All four variables], [0.56], [0.59],
+    [PCA, three components], [0.52], [0.53],
+  ),
+  caption: [Coefficients of determination for the Suwanee Creek regression models],
+) <pca-r2>
+
+#figure(
+  image("figures/suwanee_regression_daily_all.png", width: 100%),
+  caption: [Predicted vs. Observed Daily Runoff for Suwanee Creek using All Four Variables],
+) <pca-daily-all>
+
+#figure(
+  image("figures/suwanee_regression_daily_pca.png", width: 100%),
+  caption: [Predicted vs. Observed Daily Runoff for Suwanee Creek using Three Principal Components],
+) <pca-daily-pca>
+
+The R2 values from the two models range from 0.52 to 0.59 for daily runoff. The values for the testing data are similar to those for the training data, which indicates that the models are not overfitted to the training years. This is consistent with the water balance regression described above, in which including the previous day produced the largest improvement in the model. In the PCA regression, the timing component (PC3) has the largest coefficient (0.58), followed by the rainfall amount component (PC1, −0.40), which confirms that the delay between rainfall and streamflow is the most important feature captured by the aggregated precipitation variables. 
+
+The PCA regression has a slightly lower R2 for daily runoff than the regression on all four variables (0.53 compared to 0.59 for the testing data), since it uses one fewer input variable. 
+
+Two limitations can be identified: (1) days with low runoff tend to be overpredicted for both models, and (2) days with the highest runoff are underpredicted, as shown by the points falling below the line at high observed runoff in Figure X. In addition, the coefficient of the fractional impervious area component (PC2) is close to zero (−0.03), which indicates that this linear model does not detect an effect of urbanization on daily runoff at Suwanee Creek, even though the fractional impervious area increased substantially over the period of record. A linear model can only add a fixed amount of runoff for a given level of imperviousness, whereas imperviousness is expected to increase the runoff produced by each unit of rainfall. 
 
 /*This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
 Multivariate regression will also be used to analyze the strength and confidence of correlations between the climate and the urbanization metrics as independent variables and runoff or stream flow as the dependent variable. The regression optimization model will assume linear relationships for all variables except where theory, industry standards, or analysis results establish a clear nonlinear relationship, such as the relationship between CN and runoff in the SCS equation.

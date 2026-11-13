@@ -153,7 +153,7 @@ let
 	all_plot = scatter(y_train, ŷ_daily_all[train], color = :blue, markersize = 2,
 		markerstrokewidth = 0, alpha = 0.5, label = "train",
 		xlabel = "Observed daily runoff (mm)", ylabel = "Predicted daily runoff (mm)",
-		legend = :topleft)
+		legend = :topleft, dpi = 300)
 	scatter!(all_plot, y_test, ŷ_daily_all[test], color = :red, markershape = :square,
 		markersize = 2, markerstrokewidth = 0, alpha = 0.5, label = "test")
 	plot!(all_plot, [0, max_runoff], [0, max_runoff], color = :black, label = :none)
@@ -161,14 +161,34 @@ let
 	pca_plot = scatter(y_train, ŷ_daily_pca[train], color = :blue, markersize = 2,
 		markerstrokewidth = 0, alpha = 0.5, label = "train",
 		xlabel = "Observed daily runoff (mm)", ylabel = "Predicted daily runoff (mm)",
-		legend = :topleft)
+		legend = :topleft, dpi = 300)
 	scatter!(pca_plot, y_test, ŷ_daily_pca[test], color = :red, markershape = :square,
 		markersize = 2, markerstrokewidth = 0, alpha = 0.5, label = "test")
 	plot!(pca_plot, [0, max_runoff], [0, max_runoff], color = :black, label = :none)
 
-	fig = plot(all_plot, pca_plot, layout = (1, 2), size = (1000, 470),
+	plot!(all_plot, size = (600, 500))
+	savefig(all_plot, joinpath(figure_folder, "suwanee_regression_daily_all.png"))
+	plot!(pca_plot, size = (600, 500))
+	savefig(pca_plot, joinpath(figure_folder, "suwanee_regression_daily_pca.png"))
+
+	fig = plot(all_plot, pca_plot, layout = (1, 2), size = (1000, 470), dpi = 300,
 		left_margin = 8Plots.mm, bottom_margin = 8Plots.mm, top_margin = 3Plots.mm)
 	savefig(fig, joinpath(figure_folder, "suwanee_pca_regression_daily.png"))
+	fig
+end
+
+# ╔═╡ 02fb080b-1c50-4d55-95dc-58eac9dd04ae
+let
+	sept = (daily.date .>= Date(2009, 9, 10)) .& (daily.date .<= Date(2009, 9, 30))
+
+	fig = plot(daily.date[sept], y[sept], color = :black, linewidth = 2, label = "observed",
+		xlabel = "Date", ylabel = "Daily runoff (mm)", legend = :topleft,
+		size = (800, 450), left_margin = 8Plots.mm, bottom_margin = 8Plots.mm)
+	plot!(fig, daily.date[sept], ŷ_daily_all[sept], color = :blue, linewidth = 2,
+		label = "all four variables")
+	plot!(fig, daily.date[sept], ŷ_daily_pca[sept], color = :red, linewidth = 2,
+		linestyle = :dash, label = "PCA")
+	savefig(fig, joinpath(figure_folder, "suwanee_pca_sept2009.png"))
 	fig
 end
 
@@ -1544,5 +1564,6 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 # ╠═397e95b7-e725-49c8-bcb5-5100676ceb3d
 # ╠═8fb86760-add1-4962-832a-772ab3e548d3
 # ╠═3bd88e24-1ac9-4e14-a7e8-cde01a4e8f9e
+# ╠═02fb080b-1c50-4d55-95dc-58eac9dd04ae
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
