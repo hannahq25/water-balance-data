@@ -339,7 +339,7 @@ In comparing mean fractional impervious area and minimum temperature, it is seen
 
 #figure(
   caption: [Fractional Impervious Area and Annual Minimum Temperature Comparison across the Various Datasets for Watershed "02207120"],
-  image("figures/Tmmn_vs_ImpFrac.png", width: 100%),
+  image("figures/Tmmn_vs_ImpFrac_v2.png", width: 100%),
   ) <Tmmn_vs_ImpFrac>
 
 == Infiltration Capacity
@@ -822,18 +822,7 @@ The performance metrics are listed below.
   scope: "parent"
 ) <basin-characteristics>
 
-The decision tree models do only moderately better than guessing. They give relatively few false alarms (71% and 66% precisions) but miss a large number of high flow days (57% and 47% recall), especially at Chattahoochee at Helen. The decision tree model does somewhat better on the Suwanee basin than on the Chattahoochee at Helen basin (0.63 vs 0.55 F1s).
-
-
-== Comparison of Modeling Approaches
-
-Comparing the models, similar findings were found for the following: rainfall timing and time lag, effect of urbanization at the daily scale, and high-flow prediction.  
-
-The timing of the rainfall is found to be the most important predictor of streamflow. The water balance regression improved the most when the previous day was included; the Gabor transform regression used a two-day precipitation total to account for the one-day lag; the timing component had the largest coefficient in the PCA regression; and the decision trees depended mostly on the rainfall variables. Additionally, considering the runoff from the previous day(s) produced large improvements in the predictions. This is consistent with the observation that the runoff occurs approximately one day after the precipitation due to the time needed for the rainfall to reach the streamgages. 
-
-The effect of urbanization on a daily scale is difficult to detect since land cover data change annually, while runoff data change daily. The coefficient of the fractional impervious area component in the PCA regression was close to zero, and the annual impervious cover data cannot explain daily runoff in the decision trees. However, the Gabor transform regression produced a small positive coefficient for fractional impervious area, due to the effect of impervious surfaces increasing runoff. 
-
-Lastly, high flows are difficult to predict and are largely underpredicted. The water balance and PCA regressions underpredicted the highest runoff days, including the September 2009 storm, and the decision trees missed a large number of high-flow days. In contrast, the model that predicts the smoothed seasonal signal had the highest coefficient of determination, which indicates that the models perform better as the predicted quantity becomes less variable. 
+The decision tree models do only moderately better than guessing. They give relatively few false alarms (71% and 66% precisions) but miss a large number of high flow days (57% and 47% recall), especially at Chattahoochee at Helen. The decision tree model does somewhat better on the Suwanee basin than on the Chattahoochee at Helen basin (0.63 vs 0.55 F1s). 
 
 /*This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
 Multivariate regression will also be used to analyze the strength and confidence of correlations between the climate and the urbanization metrics as independent variables and runoff or stream flow as the dependent variable. The regression optimization model will assume linear relationships for all variables except where theory, industry standards, or analysis results establish a clear nonlinear relationship, such as the relationship between CN and runoff in the SCS equation.
