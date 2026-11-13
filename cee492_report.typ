@@ -41,7 +41,6 @@
 #show link: underline
 #show raw: set text(font: "DejaVu Sans Mono", size: 0.8em)
 #show table: set par(justify: false)
-#set math.equation(numbering: none)
 
 // = Background
 = Data Sources <data-sources>
@@ -258,7 +257,7 @@ Trendlines were fitted to the annual mean discharge values to determine if there
   image("figures/gage_figures.png", width: 90%),
   placement: top,
   scope: "parent",
-  )
+  ) <annualdischarge>
 
 Processing the stream average daily discharge (cfs)  into an average runoff amount per square mile per day per year  (mm/year) facilitates comparison to the water balance dataset.  The  gridded water balance daily dataset was also processed into an average value per day per year per watershed.  In comparing the two datasets, it is clear the gage data has significantly more variability between the gages than the water balance dataset as shown in the figure below.  
 
@@ -391,22 +390,22 @@ The US Army Corps of Engineers (USACE) provides a lookup table for CN values bas
   
   #figure(
   caption: [Mean Fractional Impervious Area by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/FctImp_meanByWatershed.png", height: 100%),
+  image("figures/land-cover/FctImp_meanByWatershed.png", width: 90%),
 ) <fctimpgraph>
 
 #figure(
   caption: [Percentage of Medium Intensity Developed Land Cover by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/DevelopedMediumIntensity_percentByWatershed.png", height: 100%),
+  image("figures/land-cover/DevelopedMediumIntensity_percentByWatershed.png", width: 90%),
 ) <medintdevgraph>
 
 #figure(
   caption: [Percentage of Deciduous Forest Land Cover by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/DeciduousForest_percentByWatershed.png", height: 100%),
+  image("figures/land-cover/DeciduousForest_percentByWatershed.png", width: 90%),
 ) <decforestgraph>
 
 #figure(
   caption: [Mean Curve Number by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/CN_meanByWatershed.png", height: 100%),
+  image("figures/land-cover/CN_meanByWatershed.png", width: 90%),
 ) <cngraph>
 
 Likewise, heatmaps reveal stark differences in fractional impervious area between 1985 and 2024, as well as the spatial distribution of urbanization.
@@ -440,7 +439,100 @@ The Curve Number (CN) was used to quantify the increase in urbanization in Gwinn
 
  = Predictive Modeling 
  == Multiple Linear Regression with the Water Balance Spatial Dataset
- == Multiple Linear Regression Model with a Gabor Tranform 
+ == Multiple Linear Regression Model with a Gabor Transform
+ As seen in @annualdischarge, stream flow is highly oscillatory. At the same time, it is cyclic, with visible seasonable fluctuations. Stream flow is the sum of base flow, which originates from groundwater seepage, and runoff, which is directly related to precipitation as modeled by the curve number equation. Therefore, much of the variability in stream flow is due to the oscillatory and cyclic nature of precipitation. To reduce noise and focus on periodic flows, the stream flow, precipitation, and temperature data were transformed using a Gabor transform. This transform was applied only to the Suwanee Creek watershed due to its longer record of stream gage data but may be generalized to other watersheds. @normtimeseries shows time series plots of the normalized raw data, and Figure @powerspectra shows the frequency-domain graphs of the three variables produced by a Fast Fourier Transform (FFT). Two-day precipitation represents each day's precipitation plus the previous day's precipitation to account for an observed 1-day lag between peak precipitation and peak stream flow.
+
+#figure(
+  caption: [Normalized Daily Data, Suwanee Creek Watershed],
+  image("figures/gabor-transform/Suwanee-Norm-Gage-Precip-Temp.png"),
+) <normtimeseries>
+
+#figure(
+  caption: [Frequency-Domain Graphs, Suwanee Creek Watershed],
+  image("figures/gabor-transform/SuwaneePowerSpectra.png"),
+) <powerspectra>
+
+The frequency with the greatest amplitude for both stream flow and minimum temperature is 1/year. This aligns with the fact that precipitation and temperature are seasonal, or yearly periodic. While precipitation itself is more random (its three highest FFT frequencies are 21/year, 9/year, and 2/year), stream flow typically captures a smoother trend in precipitation-induced runoff due to the buffering effect of the watershed. 
+
+Thus, a Gabor transform was applied to stream flow, precipitation, and temperature to analyze the change in 1/year frequency data over time. A relatively large standard deviation of 10 days (i.e. 10 samples) was used for the moving Gaussian window to favor frequency resolution over temporal resolution.
+
+#figure(
+  caption: [Amplitudes of Gabor-Transformed Data at 1/year Frequency and Fractional Impervious Area, Suwanee Creek Watershed],
+  image("figures/gabor-transform/SuwaneeGaborMatrixAnnualFreq.png"),
+)
+
+#figure(
+  caption: [Spectrogram of Stream Flow, Suwanee Creek Watershed],
+  image("figures/gabor-transform/SuwaneeRunoffSpectrogram.png"),
+)
+
+The Gabor-transformed variables, plus fractional impervious area, were passed into a multiple linear regression model of the form:
+
+$ S_"Gabor" = P_"Gabor" + T_"Gabor" + F $
+
+Where $S_"Gabor"$ is Gabor-transformed streamflow, $P_"Gabor"$ is Gabor-transformed precipitation, $T_"Gabor"$ is Gabor-transformed temperature, and $F$ is mean fractional impervious area.
+
+=== Training on 80% of Data
+
+20% of the data was withheld for testing using a Xoshiro random number generator with a seed of 42 from the Random Julia package. The regression model was trained on the other 80% of the data, utilizing the GLM Julia package.
+
+The model yielded the coefficients in the left side of @gabor-lm-coeff. The linear model was then used to predict stream flow for the testing data, as shown in @gabor-predictions. Performance metrics are summarized in @gabor-error.
+
+#figure(
+  caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1/year Frequency, Tested on 20% of Data, Suwanee Creek Watershed],
+  image("figures/gabor-transform/SuwaneeLMPrediction.png"),
+) <gabor-predictions>
+
+
+=== Training on Pre-2020 Data
+
+The same linear model was trained on data before 2020 and tested on data from 2020-2024, resulting in the coefficients on the right side of @gabor-lm-coeff.
+
+The model trained on pre-2020 data had slightly worse performance in predicting its testing data, but much lower error in predicting the post-2020 training data, most likely due to longer timespan and greater variation in weather and streamflow patterns in the pre-2020 years.
+
+#figure(
+  caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1/year Frequency, Tested on 2020-2024 Data, Suwanee Creek Watershed],
+  image("figures/gabor-transform/SuwaneeLMPredictionPost2024.png"),
+) 
+
+#figure(
+    caption: [Gabor-Transformed Linear Model Coefficients],
+    table(
+      columns: (auto, auto, auto, auto, auto, auto, auto,),
+      align: (center+horizon, center+horizon, center+horizon,),
+      table.header(
+        table.cell(rowspan:2)[*Variable*],
+        table.cell(colspan:3)[*Model Trained on 80% of Data*],
+        table.cell(colspan:3)[*Model Trained on Pre-2020 Data*],
+        [*Coeff.*], [*t-score*], [*Pr(>|t|)*],
+        [*Coeff.*], [*t-score*], [*Pr(>|t|)*]),
+      "Intercept", "8.761e-4", "17.48", "<1e-66", "8.604e-4", "17.60", "<1e-67", 
+       $P_"Gabor"$, "2.296e-1", "157.34", "<1e-99",       "2.270e-1", "157.79", "<1e-99",
+       $T_"Gabor"$, "-4.594e-2", "-61.00", "<1e-99",      "-4.454e-2", "-60.54", "<1e-99",
+       $F$, "3.834e-4", "21.07", "<1e-95",        "3.379e-4", "17.90", "<1e-95"
+    ),
+  ) <gabor-lm-coeff>
+
+#figure(
+    caption: [Gabor-Transformed Linear Model Error Metrics],
+    table(
+      columns: (35mm, auto, auto, ),
+      align: (center+horizon, center+horizon, center+horizon,),
+      table.header(
+        table.cell()[*Variable*],
+        table.cell[*Model Trained on 80% of Data*],
+        table.cell[*Model Trained on Pre-2020 Data*],),
+      $R^2$, "0.72", "0.70",
+      [MAPE#super[a] on Training Data], "44.17%", "47.28%",
+      "MAPE on Testing Data", "45.96%", "19.11%",
+      [RSME#super[b] on Training Data], "1.946e-3","2.004e-3",
+      "RSME on Testing Data", "1.985e-3", "1.520e-3",
+      table.cell(colspan:3, align:left)[a. Mean Absolute Percentage Error \ b. Root Mean Square Error],
+    ),
+  ) <gabor-error>
+
+Both models confirm that precipitation is more strongly correlated with stream flow than temperature and fractional impervious area. However, both models have relatively low R#super[2] values and, in most cases, large mean absolute percentage error (MAPE) values between predictions and actual data. Nevertheless, the R#super[2] values are an improvement upon linear models without Gabor transforms. In addition, the large errors are generally due the model underpredicting extreme peaks and troughs in the real data. A linear model on one frequency column of a Gabor-transform would not be able to predict stream flows at other frequencies, but it does offer an interpretable model to understand amplitudes of seasonal or other periodic flows as a function of precipitation, temperature and fractional impervious area.
+
  == Multiple Linear Regression Model with Principal Component Analysis 
 
 /*This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
