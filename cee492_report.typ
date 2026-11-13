@@ -48,21 +48,21 @@
 This project explores a collection of water and climate datasets to evaluate the ability to predict runoff under non-stationary climate and land use environments. In order to evaluate these, the project will combine and synthesize data from the following sources. 
 == Daily Historical Water Balance Dataset (Daily Water Balance):
  The primary model-created dataset used as part of this project is a gridded daily historical water balance dataset covering the continental US (CONUS) @Tercek2023. The dataset was originally developed under the National Park Service Inventory and Monitoring Program and the National Park Service Climate Change Response Program. Version 1.5, the version currently available through the National Aeronautics and Space Administration (NASA), provides daily historic data (1980–2024) on #link("https://search.earthdata.nasa.gov/search?q=C2674700048-LPCLOUD")[NASA's Earthdata database] or an #link("https://npwbanalres.s3.us-west-2.amazonaws.com/index.html")[Amazon S3 bucket]. @HistBalanceData
-
+/*
 == Future Conditions Water Balance Dataset (Future Water Balance)
  Tercek et al (2023) also used the same model method to project the data under various climate change scenarios and climate change models. These are available as 30-year averages (2040–2069 and 2070–2099, under both Representative Concentration Pathway (RCP) 4.5 and RCP 8.5 #footnote[RCP 4.5 and RCP 8.5 are emissions scenarios with radiative forcing of 4.5 and 8.5 W/m#super[2] in 2100, respectively.]) for an assortment of climate models from a second Amazon S3 bucket @FutureBalanceData. Many references cite a THREDDS server for the water balance data; however, that server is no longer valid.  The dataset also spans CONUS.
-
+*/
 == GridMET 
  Version 1.5 of the Daily Water Balance dataset was developed using climate data available from Climatology Lab's GridMET dataset@abatzoglou2013 @GridMETwebsite. GridMET is a 4-km gridded daily time series dataset from 1979 through the present for CONUS. It blends the spatial detail of Parameter-elevation Regressions on Independent Slopes Model (PRISM) climate data with the daily timing of National Land Data Assimilation System Phase 2 (NLDAS-2) reanalysis. While the focus and calibration of the dataset is on climate variables such as precipitation and temperature, Climatology Lab also stores terrain data on a similar grid and spatial domain that can be used for modeling purposes. 
-
+/*
  == Multivariate Adaptive Constructed Analogs (MACA)
  Climatology Lab has also developed downscaled future conditions datasets titled Multivariate Adaptive Constructed Analogs (MACA). The MACA datasets downscale an assortment of climate models under both RCP 4.5 and RCP 8.5 to a 4-km grid for CONUS at a daily time interval.  For this project, the  MACAv2-METDATA dataset was used. The synthesized dataset for this project will be trained on the GridMET data and therefore should minimize biases between the historical and future conditions datasets.  This project utilized only one climate model data available from MACA, CNRM-CM5, due to the significant amount of data available. CNRM-CM5 was chosen as the sample model because it more closely replicates extreme precipitation cycles in the Northeast United States, which typically sees similar weather patterns to the selected study area in Georgia (see @domain-selection). The MACA dataset is available through the Climatology Lab website @MACAwebsite.
 
  == U.S. Climate Resilience Toolkit Climate Explorer (Climate Explorer)
  Climate projections typically utilize an ensemble of datasets, simulations, or models to improve performance and reduce uncertainty. Therefore, the MACA data will be supported by annual ensemble data from Climate Explorer, a tool built by the Environmental Protection Agency (EPA), NASA, National Oceanic and Atmospheric Administration (NOAA), and the US Geological Survey (USGS) and hosted by the National Environmental Modeling and Analysis Center (NEMAC) at the University of North Carolina Asheville. The tool provides historical climate conditions across the US based on observations at weather stations and projected climate conditions based on global climate models for the Coupled Model Intercomparison Project Phase 5 (CMIP5) under RCP 4.5 and RCP 8.5. Annual, locality-specific data can be downloaded through the online Climate Explorer tool @ClimateExplorer. 
-
+*/
  == Soil Survey Geographic Database (SSURGO) <ssurgo-intro>
-Runoff is impacted not only by climate, but also by soil conditions. Data on soil properties across CONUS are available through the Natural Resources Conservation Service's (NRCS) Soil Survey Geographic Database (SSURGO).  While the dataset has been updated over the years, there is no time dimension to the data unlike the other datasets discussed above.  The dataset categories areas spatially by soil type and provides tables detailing the properties of each soil type. The two primary variables that will be used as part of this project are the Hydrologic Soil Group and the Available Water Storage.  Both variables express the infiltration capacity of the soil type.  Hydrologic Soil Group expresses the soil type as either A, B, C, or D, with A being the most permeable and D being the least permeable.  Available Water Storage expresses the amount of water that can be stored for use by plants up to a certain depth in the soil and stores the value in millimeters (mm), typically ranging between 0 and 250 mm.  SSURGO data is available in statewide datasets from the NRCS website @SSURGO. 
+Runoff is impacted not only by climate, but also by soil conditions. Data on soil properties across CONUS are available through the Natural Resources Conservation Service's (NRCS) Soil Survey Geographic Database (SSURGO).  While the dataset has been updated over the years, there is no time dimension to the data unlike the other datasets discussed above.  The dataset categorizes areas spatially by soil type and provides tables detailing the properties of each soil type. The two primary variables that will be used as part of this project are the Hydrologic Soil Group and the Available Water Storage.  Both variables express the infiltration capacity of the soil type.  Hydrologic Soil Group expresses the soil type as either A, B, C, or D, with A being the most permeable and D being the least permeable.  Available Water Storage expresses the amount of water that can be stored for use by plants up to a certain depth in the soil and stores the value in millimeters (mm), typically ranging between 0 and 250 mm.  SSURGO data is available in statewide datasets from the NRCS website @SSURGO. 
 
 == Annual National Land Cover Database Collection 1.2  (NLCD)
  While not utilized in the Daily Water Balance, the other major variable typically used when evaluating infiltration capacity is land use.  Land use data predicts infiltration capacity by identifying: (a) impervious surfaces, where no infiltration is possible, (b) barren land, which has moderate infiltration capacity, and (c) different types of vegetative cover, which have greater capacities to intercept and absorb rainfall. The USGS has classified land cover and surface change characteristics across CONUS by applying geospatial deep learning algorithms to the Landsat satellite imagery record @NLCDUserGuide. The resulting data is available in the Annual National Land Cover Database Collection 1.2 (NLCD) on an annual basis, beginning in 1985. The Land Cover Classification and Fractional Impervious Surface products in the dataset are used in this project. The data is available to view and download through multiple platforms, including the Multi-Resolution Land Characteristics (MRLC) Web Viewer @MRLCViewer.
@@ -104,12 +104,12 @@ Version 1.5 of the water balance dataset was developed from daily meteorological
     `deficit`, "Difference between "+`pet`+" and "+ `aet`+". Greater than zero when climate and vegetation could support more evaporation and transpiration than the soil can supply; otherwise 0.", "mm/day", "Daily"
   ),
 )
-
+/*
 == Future Water Balance
 The future water balance data is available as Georeferenced Tagged Image File Format (GeoTIFF) files summarized as the 30-year means. A GeoTIFF file embeds georeferencing information within a TIFF image file. Each GeoTIFF represents a separate variable, similar to the variables in the historic dataset (rain, runoff, pet, etc.), and each pixel of the GeoTIFF stores a value for the variable for a particular georeferenced location. 
-
+*/
 == GridMET
-The gridMET data are available as NetCDF files, usually one file per variable per year, on a regular latitude–longitude grid in geographic coordinate system World Geodetic System 1984 (WGS84). The GridMET dataset spans the years 1979 to the present.
+The GridMET data are available as NetCDF files, usually one file per variable per year, on a regular latitude–longitude grid in geographic coordinate system World Geodetic System 1984 (WGS84). The GridMET dataset spans the years 1979 to the present.
 // This is also available through Google Earth Engine. Gridded daily time series covering the contiguous US from 1979 to the present, at about 4 km resolution (1/24°). It blends the spatial detail of Parameter-elevation Regressions on Independent Slopes Model (PRISM) climate data with the daily timing of National Land Data Assimilation System Phase 2 (NLDAS-2) reanalysis.
 
 The dataset includes precipitation, daily maximum and minimum temperature, which are the primary climate variables for the project. Other variables, that may be used as part of the project, included in the dataset such as srad, vpd and pdsi. The table below lists the variables used in this project.
@@ -128,7 +128,7 @@ The dataset includes precipitation, daily maximum and minimum temperature, which
   [`pdsi`],[Palmer Drought Severity Index (ten-day severity indicator)],[none],
   )
 )
-
+/*
 == MACA
 The MACA dataset is also available as NetCDF files and was downloaded as one NetCDF file per model, per scenario, per variable.  As discussed in @data-sources, only one climate model (CNRM-CM5) was used for both RCP 4.5 and RCP 8.5 scenarios.  The variables used in this project are precipitation (`pr`, in mm), daily maximum and minimum temperature (`tmmx`, `tmmn`, in Kelvin).
 
@@ -192,17 +192,17 @@ For each variable, CSV files may be downloaded containing the following:
   [`rcp85_max`],[maximum for RCP 8.5],[variable dependent],
   )
 )
-
+*/
 == SSURGO
 The SSURGO dataset, accessed as a statewide database for Georgia as part of this project, is available in two parts:
 (1) a GeoTIFF file defining the soil type using a map unit key (`mukey`) for each grid cell, and 
-(2) the tabular data describing the various soil property for each `mukey`. Each table for the state of Georgia was included in a geopackage (gpkg) database file. For this project, the key table is the Map Unit Aggregated Attribute (`muaggatt`) table, which stores the hydrologic soil group per map unit (`hydgrpdcd`) and the available water storage capacity (`aws150`). Both of these variables are used to calculate the infiltration capacity of the soil. 
+(2) the tabular data describing the various soil properties for each `mukey`. Each table for the state of Georgia was included in a geopackage (gpkg) database file. For this project, the key table is the Map Unit Aggregated Attribute (`muaggatt`) table, which stores the hydrologic soil group per map unit (`hydgrpdcd`) and the available water storage capacity (`aws150`). Both of these variables are used to calculate the infiltration capacity of the soil. 
 // Although the data was collected and updated over time, the only available dataset the most recently collected soil conditions and therefore there is no time dimension to this data source.  
 
 The GeoTIFF used for this project was in a 10m resolution in the European Petroleum Survey Group (EPSG) projection number 5070, also known as the NAD83 / Conus Albers projection. 
 
 == NLCD
-The NLCD data is provided as Cloud-Optimized GeoTIFF (COG) files, similar to the Future Water Balance data. Each GeoTIFF image corresponds to a year and a land cover variable. The table below shows the legend for Land Cover values according to the Annual National Land Cover Database (NLCD) Collection 1 Science Product User Guide @NLCDUserGuide.
+The NLCD data is provided as Cloud-Optimized GeoTIFF (COG) files. Each GeoTIFF image corresponds to a year and a land cover variable. The table below shows the legend for Land Cover values according to the Annual National Land Cover Database (NLCD) Collection 1 Science Product User Guide @NLCDUserGuide.
 
 #figure(
   caption: [NLCD Land Cover Legend],
@@ -235,15 +235,17 @@ Gwinnett County, GA was chosen as the focus area due to its rapid urbanization w
   image("figures/LocationMap.png", width: 80%),
   caption: [Location of the 15 gaged watersheds evaluated in this report],
 ) <locationmap>
-Analyzing runoff and stream flow requires the precision of daily data. However, urbanization trends are best observed, and future predictions are best made at annual or decadal intervals. Therefore, for each watershed and time period, the data was  summarized by the daily average, median, maximum, and minimum if available, and each statistical parameter was also estimated on an annual basis.
+In addition, because of the intense urbanization in all of the Gwinnett Watersheds, a sixteenth watershed was selected nearby without urbanization over the study period.  The gage, Chattahoochee River at Helen, GA (USGS Gage 02335000) was selected as a control watershed to compare the results of the Gwinnett County watersheds to a watershed that has not been impacted by urbanization.  
 
-Although data in the datasets span the years 1950 to 2100, most of the data is only available between 1985 to 2024 for historical datasets and from 2025 to 2099 for future datasets.  Therefore this project will focus on those two time periods.  Most of the gage streamflow datasets do not begin until the mid-2000s, so much of the predictive modeling that relies on the stream gage data will be limited to the 20-year period between 2000 and 2025.
+Analyzing runoff and stream flow requires the precision of daily data. However, urbanization trends are best observed at annual or decadal intervals. Therefore, for each watershed and time period, the data was  summarized by the daily average, median, maximum, and minimum if available, and each statistical parameter was also estimated on an annual basis.
+
+Although data in the datasets span the years 1950 to present, most of the data is only available between 1985 to 2024 for historical datasets.  Therefore this project will focus on this time period.  Most of the gage streamflow datasets do not begin until the mid-2000s, so the predictive modeling will focus on gages with a full record (02335000 and 02334885).
 
 = Exploratory Data Analysis
 
 == Runoff and Streamgage
 
-The daily mean discharge data was obtained from US Geological Survey (USGS) for the 14 streamgages in Gwinnett County, Georgia. The Wildcat Creek streamgage was excluded, since its recorded data (1953 – 1982) lies outside of the period scope of study (1985 -present). Streamgage data is the observed waterflow at the outlet of a watershed, normally given by the USGS as daily values.  
+The daily mean discharge data was obtained from US Geological Survey (USGS) for 14 of the 15 streamgages in Gwinnett County, Georgia. The Wildcat Creek streamgage was excluded, since its recorded data (1953 – 1982) lies outside of the period scope of study (1985 -present) and the control watershed was not included. Streamgage data is the observed waterflow at the outlet of a watershed, normally given by the USGS as daily values.  
 
 The raw data file for each streamgage from USGS contains the date, corresponding mean discharge in cubic feet per second (ft3/s), and a date-value qualification value. The qualification codes include A (approved for publication), e (value has been estimated), R (records were revised), and P (provisional data subject to revision). The compiled data disregarded the provisional data and only retained the approved data. The days without a discharge value were also disregarded. Additionally, years with incomplete data, either: (a) not having a complete year (year with less than 360 days of data), (b) having no data at all, were also disregarded. 
 
@@ -258,14 +260,14 @@ Trendlines were fitted to the annual mean discharge values to determine if there
   scope: "parent",
   )
 
-Processing the stream average daily discharge (cfs)  into an average runoff amount per square mile per day per year  (mm/year) facilitates comparison to the water balance dataset.  The  gridded water balance daily dataset was also processed into an average value per day over per  year over the entire watershed.  In comparing the two datasets, it is clear the gage data has significantly more variability between the gages than the water balance dataset as shown in the figure below.  
+Processing the stream average daily discharge (cfs)  into an average runoff amount per square mile per day per year  (mm/year) facilitates comparison to the water balance dataset.  The  gridded water balance daily dataset was also processed into an average value per day per year per watershed.  In comparing the two datasets, it is clear the gage data has significantly more variability between the gages than the water balance dataset as shown in the figure below.  
 
 #figure(
   caption: [Standard Deviation of Runoff across Watersheds],
   image("figures/stdev.png", width: 100%),
 )
 
-The water balance dataset incorporates the spatial variability of the rainfall as well as the variability in infiltration capacity of just the underlying soils but does not incorporate land use variability or other hydrologic factors such as storage ponds within the watershed.  So it is expected that the real-world data would exhibit more variability than the modeled data.  One notable difference is higher variability in the mid 2010s in the water balance datasets. This could indicate this year is one where there was more spatial variability in the rainfall datasets across the 15 watersheds. 
+The water balance dataset incorporates the spatial variability of the rainfall as well as the variability in infiltration capacity of just the underlying soils but does not incorporate land use variability or other hydrologic factors such as storage ponds within the watershed.  So it is expected that the real-world data would exhibit more variability than the modeled data.  One notable difference is higher variability in the mid 2010s in the water balance datasets. This could indicate these years is one where there was more spatial variability in the rainfall datasets across the 15 watersheds. 
 
 In addition to providing a comparison of data, it is important to have confidence that the datasets can be evaluated jointly as part of the predictive modeling.  The figure below compares the estimated annual daily runoff for gage 02207120 for both the gage data and the water balance data. 
 
@@ -283,11 +285,11 @@ In addition to annual data, the project developed daily summaries for each of th
   image("figures/DailyGagevsWaterBalance.png", width: 100%),
 )
 
-As expected, the gage data runoff peaks approximately a day after the water balance data does because of the travel time between the location of the rainfall and the stream gage.  However, the overall volumes do not align, in most cases the water balance data is predicting more runoff than actually was measured at the stream gage.  This could indicate the water balance dataset is not doing a reasonable job of assessing other factors that contribute to the amount of runoff that are typically considered when developing a rainfall runoff model, specifically the initial loss or initial abstraction which is often due to small irregularities in ground surface.  
+As expected, the gage data runoff peaks approximately a day after the water balance data does because of the travel time between the location of the rainfall and the stream gage.  However, the overall volumes do not align, in most cases the water balance data is predicting more runoff than actually was measured at the stream gage.  This could indicate the water balance dataset is poorly incorporating the full set of factors that contribute to the final runoff amount.  
 
 == Precipitation
 
-The gridMET precipitation variable is used in the Daily Water Balance model and is therefore explored further. @mean-daily-precip shows the annual mean daily precipitation from 1985 to 2024 to correspond with the general temporal data availability for other datasets used in this project. The annual mean daily precipitation is calculated by aggregating the daily precipitation over GridMET 4-km grids that have centroids within a watershed. If no grid centroids are located within a watershed (such as smaller watersheds), the grids closest to a watershed are allocated to that watershed. This approach is also used for other variables from the GridMet dataset. The bold line is the average across the 15 watersheds. The thin grey lines are the individual basins and track each other closely. The shaded band spans one standard deviation above and below the trend line of the annual data scattered about the trend line. The band is included to assess whether an apparent trend is larger than ordinary year-to-year variation, in comparing the total rise against one standard deviation. 
+The GridMET precipitation variable is used in the Daily Water Balance model and is therefore explored further. @mean-daily-precip shows the annual mean daily precipitation from 1985 to 2024 to correspond with the general temporal data availability for other datasets used in this project. The annual mean daily precipitation is calculated by aggregating the daily precipitation over GridMET 4-km grids that have centroids within a watershed. If no grid centroids are located within a watershed (such as smaller watersheds), the grids closest to a watershed are allocated to that watershed. This approach is also used for other variables from the GridMet dataset. The bold line is the average across the 15 watersheds. The thin grey lines are the individual basins and track each other closely. The shaded band spans one standard deviation above and below the trend line of the annual data scattered about the trend line. The band is included to assess whether an apparent trend is larger than ordinary year-to-year variation, in comparing the total rise against one standard deviation. 
 
 For annual mean daily precipitation, the rise across the data record is smaller than one standard deviation of the scatter, so no trend can be distinguished from the noise, even though the fitted line does slope upward.  
 
@@ -299,11 +301,11 @@ For annual mean daily precipitation, the rise across the data record is smaller 
 @max-daily-precip shows the annual maximum daily rainfall, where the increasing trend is more visible. The annual maximum rainfall rises by approximately 7.7 mm per decade. The total precipitation is therefore roughly unchanged while the heaviest precipitation events become more intense. Because peak flows and runoff response depend on rainfall intensity rather than annual depth, this distinction is relevant to the runoff modeling.
 
 #figure(
-  caption: [Mean Daily Precipitation Trends for 15 Watersheds in Gwinnett County, GA],
+  caption: [Annual Maximum Daily Rainfall for 15 Watersheds in Gwinnett County, GA],
   image("figures/Max_Daily_Precip.png", width: 100%),
   ) <max-daily-precip>
 
-The MACA dataset simulates daily precipitation spatially between the years 1950 to 2099. The period between 1950-2006 is considered a historic dataset and the remaining years are reflective of different climate scenarios (RCP45/ RCP85) and different models.  Due to the amount of data available (two climate scenarios, multiple models), the daily data for MACA was only pulled for one model, CNRM-CM5 for both climate scenarios.  This model was selected as the sample model to use because it more closely replicates extreme precipitation cycles in the #link("https://journals.ametsoc.org/view/journals/clim/33/22/jcliD190757.xml#:~:text=Simulation%20of%20Northeast%20U.S.%20Extreme%20Precipitation%20and,Observed%20extreme%20precipitation.%20Reanalysis%20geopotential%20height%20patterns.")[Northeast United States], which typically sees common weather patterns similar to the southeast and Georgia. Typically with climate data, it is valuable to also consider an ensemble of multiple climate models to fully understand the uncertainty in the data. Since only one model was used, it is important to verify that it is not exhibiting any trends that are not apparent in the ensemble dataset.   
+/*The MACA dataset simulates daily precipitation spatially between the years 1950 to 2099. The period between 1950-2006 is considered a historic dataset and the remaining years are reflective of different climate scenarios (RCP45/ RCP85) and different models.  Due to the amount of data available (two climate scenarios, multiple models), the daily data for MACA was only pulled for one model, CNRM-CM5 for both climate scenarios.  This model was selected as the sample model to use because it more closely replicates extreme precipitation cycles in the #link("https://journals.ametsoc.org/view/journals/clim/33/22/jcliD190757.xml#:~:text=Simulation%20of%20Northeast%20U.S.%20Extreme%20Precipitation%20and,Observed%20extreme%20precipitation.%20Reanalysis%20geopotential%20height%20patterns.")[Northeast United States], which typically sees common weather patterns similar to the southeast and Georgia. Typically with climate data, it is valuable to also consider an ensemble of multiple climate models to fully understand the uncertainty in the data. Since only one model was used, it is important to verify that it is not exhibiting any trends that are not apparent in the ensemble dataset.   
 
 In @ensemble-comparison we compare the ensemble annual rainfall in mm which is available at county-level at Climate Explorer. Climate Explorer reports the weighted mean, maximum and minimum value of the ensemble.  From this comparison of the ensemble results to the values aggregated as part of this project for CNRM-CM5, it is apparent that the data does not show any noticeable trends outside of the ensemble results. The single model predicts more variability year over year than the ensemble (mean).  
 
@@ -318,31 +320,31 @@ The evaluation of precipitation across three datasets, requires confirmation tha
   caption: [AnnualPrecipitation Comparison across the Various Datasets for Watershed "02207120"],
   image("figures/PrecipRain_ensemble_CNRM_WB_gridmet.png", width: 100%),
   ) <precip-ensemble-comparison>
-
+*/
 == Temperature
 
-Unlike precipitation, both temperature variables show a larger rise (@max-temp-trend and @min-temp-trend) compared to their respective 1 standard deviation noise bands. Minimum temperature increases at 0.374 degrees Celsius per decade and maximum temperature at 0.268 degree Celsius per decade, amounting to approximately 1.5 degrees Celsius and 1.0 degree Celsius respectively across the data record. Relative to the annual scatter, the minimum temperature trend is the more pronounced compared to the maximum temperature trend, as it rises roughly two and a half times one standard deviation, compared to about 1.3 times for maximum temperature. 
+Unlike precipitation, both temperature variables show a larger rise (@max-temp-trend and @min-temp-trend) compared to their respective 1 standard deviation noise bands. Minimum temperature increases at 0.374 degrees Celsius per decade and maximum temperature at 0.268 degree Celsius per decade, amounting to approximately 1.5 degrees Celsius and 1.0 degree Celsius respectively across the data record. Relative to the annual scatter, the minimum temperature trend is more pronounced compared to the maximum temperature trend, as it rises roughly two and a half times one standard deviation, compared to about 1.3 times for maximum temperature. 
 
 #figure(
-  caption: [Annual Temperature Comparison across the Various Datasets for Watershed "02207120"],
+  caption: [Annual Maximum Temperature Comparison across the Various Datasets for Watershed "02207120"],
   image("figures/Max_temp_trend.png", width: 100%),
   ) <max-temp-trend>
 
 #figure(
-  caption: [Annual Temperature Comparison across the Various Datasets for Watershed "02207120"],
+  caption: [Annual Minimum Temperature Comparison across the Various Datasets for Watershed "02207120"],
   image("figures/Min_temp_trend.png", width: 100%),
   ) <min-temp-trend>
 
 In comparing mean fractional impervious area and minimum temperature, it is seen that both variables increase over the temporal domain, as shown in @Tmmn_vs_ImpFrac, though not at a constant rate. Mean fractional impervious area appears to increase at a greater rate roughly until 2005, after which it slows substantially. Minimum temperature rises unevenly, with most of the increase showing up around 2004. Both variables are overall increasing across the period as a whole, so there is reason to suspect they may confound each other. This is directly relevant to the project's central question of how much runoff change is attributable to climate versus land use changes. The differing shapes of the two trends, in particular the period after 2005, where impervious area plateaus while temperature continues to rise, may offer a means of distinguishing them. Methods to do so will be explored further. 
 
 #figure(
-  caption: [Annual Temperature Comparison across the Various Datasets for Watershed "02207120"],
+  caption: [Fractional Impervious Area and Annual Maximum Temperature Comparison across the Various Datasets for Watershed "02207120"],
   image("figures/Tmmn_vs_ImpFrac.png", width: 100%),
   ) <Tmmn_vs_ImpFrac>
 
 == Infiltration Capacity
 
-For nearly all watersheds in Gwinnett County, the NLCD data shows a rapid increase in fractional impervious areas between 1985 and the early 2000's, followed by a slower rate of growth after 2010 (see @fctimpgraph). Percentages of developed land cover follow a similar trend as fractional impervious area (see @medintdevgraph). This trend is mirrored by declines in deciduous forest land cover that plummet until the early 2000's and decrease more gradually decreased after (see @decforestgraph). These patterns \indicate a surge in urbanization, including land development and deforestation, through the early 2000's and steady urbanization from the early 2000's to the present.
+For nearly all watersheds in Gwinnett County, the NLCD data shows a rapid increase in fractional impervious areas between 1985 and the early 2000s, followed by a slower rate of growth after 2010 (see @fctimpgraph). Percentages of developed land cover follow a similar trend as fractional impervious area (see @medintdevgraph). This trend is mirrored by declines in deciduous forest land cover that plummet until the early 2000s and decrease more gradually decreased after (see @decforestgraph). These patterns \indicate a surge in urbanization, including land development and deforestation, through the early 2000's and steady urbanization from the early 2000s to the present.
 
 Rather than tracking all land cover classes over time, the SCS Curve Number may be used to capture the totality of land use changes across all land use types and relate them to runoff and infiltration. According to NRCS' Technical Release 55 (TR-55) @tr55, runoff may be modeled as a function of precipitation and watershed characteristics using the SCS Curve Number method, which states:
 
@@ -407,8 +409,18 @@ The US Army Corps of Engineers (USACE) provides a lookup table for CN values bas
   image("figures/land-cover/CN_meanByWatershed.png", height: 100%),
 ) <cngraph>
 
-Likewise, meatmaps reveal stark differences in fractional impervious area between 1985 and 2024, as well as the spatial distribution of urbanization.
+Likewise, heatmaps reveal stark differences in fractional impervious area between 1985 and 2024, as well as the spatial distribution of urbanization.
 
+#figure(
+  stack(
+    dir: ttb,
+    spacing: 0.8em,
+    image("figures/land-cover/FctImp1985.png", width: 100%),
+    image("figures/land-cover/FctImp2024.png", width: 100%),
+  ),
+  caption: [Fractional Impervious Area in Gwinnett County, GA in 1985 vs 2024],
+) <fig-fctimp>
+/*
 #figure(
   image("figures/land-cover/FctImp1985.png", width: 100%),
 )
@@ -417,17 +429,21 @@ Likewise, meatmaps reveal stark differences in fractional impervious area betwee
   caption: [Fractional Impervious Area in Gwinnett County, GA in 1985 vs 2024],
   image("figures/land-cover/FctImp2024.png", width: 100%),
 )
-
- In addition to land use and impervious area, the other factor which determines infiltration capacity for an area is the soil type. The SSURGO data is the only input in determining the maximum potential storage of rainwater within the water balance dataset. It is derived from the available water storage variable (AWS) variable within the SSURGO dataset and estimates the amount of water that can be stored within the soil that is available to plants. While the maximum AWS used for the water balance dataset is not provided, in general it is possible to estimate the value used by taking the maximum value overtime for each grid cell.  By visual comparison on a sample watershed for USGS gage 02207120, the datasets do generally align as shown below.  However it should be noted that differences will exist because reprojection methods when developing the water- balance datasets are not publicly available.  In general, it appears the maximum soilwater value is higher than the value this project estimated from the SSURGO data, indicated using the maximum soiilwater would be an appropriate way to estimate the maximum soil bucket input value. 
+*/
+ In addition to land use and impervious area, the other factor which determines infiltration capacity for an area is the soil type. The SSURGO data is the only input in determining the maximum potential storage of rainwater within the water balance dataset. It is derived from the available water storage variable (AWS) variable within the SSURGO dataset and estimates the amount of water that can be stored within the soil that is available to plants. While the maximum AWS used for the water balance dataset is not provided, in general it is possible to estimate the value used by taking the maximum value over time for each grid cell.  By visual comparison on a sample watershed for USGS gage 02207120, the datasets do generally align as shown below.  However it should be noted that differences will exist because reprojection methods when developing the water- balance datasets are not publicly available.  In general, it appears the maximum soilwater value is higher than the value this project estimated from the SSURGO data, indicating that the maximum soilwater would be an appropriate way to estimate the maximum soil bucket input value if needed to recreate the water balance process. 
 
 #figure(
   caption: [SSURGO Available Water Storage (left), Daily Water Balance Maximum Soilwater (right)],
   image("figures/SSURGOvsSoilwater.png", width: 100%),
 )
-The Curve Number (CN) was used to determine the increase in urbanization in Gwinnett County. The average CN per year per watershed (site location) was used to represent urbanization and was plotted against time with the average mean discharge for each watershed. While the CN is seen to increase over time, the average mean discharge is seen to be controlled by the wet and dry periods, indicated by the lack of visually increasing or decreasing trends over time.
+The Curve Number (CN) was used to quantify the increase in urbanization in Gwinnett County. The average CN per year per watershed (site location) was used to represent urbanization and was plotted against time with the average mean discharge for each watershed. While the CN is seen to increase over time, the average mean discharge is seen to be controlled by the wet and dry periods, indicated by the lack of visually increasing or decreasing trends over time.
 
  = Predictive Modeling 
-This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
+ == Multiple Linear Regression with the Water Balance Spatial Dataset
+ == Multiple Linear Regression Model with a Gabor Tranform 
+ == Multiple Linear Regression Model with Principal Component Analysis 
+
+/*This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
 Multivariate regression will also be used to analyze the strength and confidence of correlations between the climate and the urbanization metrics as independent variables and runoff or stream flow as the dependent variable. The regression optimization model will assume linear relationships for all variables except where theory, industry standards, or analysis results establish a clear nonlinear relationship, such as the relationship between CN and runoff in the SCS equation.
 The above models will then be used to predict runoff under four cases: 
 1.	historical land cover with historical climate (baseline)
@@ -437,3 +453,4 @@ The above models will then be used to predict runoff under four cases:
 Future land cover may be extrapolated from annual NLCD trends. Comparing these results with the future water balance projections will show the influence of urbanization versus climate on future runoff.
 
 In comparing mean fractional impervious area and minimum temperature, it is seen that both variables increase over the temporal domain, as shown in Figure I-1, though not at a constant rate. Mean fractional impervious area appears to increase at a greater rate roughly until 2005, after which it slows substantially. Minimum temperature rises unevenly, with most of the increase showing up around 2004. Because both variables are net-increasing across the period as a whole there is cause to suspect they may confound each other. This is directly relevant to the project's central question of how much runoff change is attributable to climate versus land use. The differing shapes of the two trends, in particular the period after 2005, where impervious area plateaus while temperature continues to rise, may offer a means of distinguishing them. Methods to do so will be explored further.
+*/
