@@ -706,6 +706,113 @@ The figure above compares observed and predicted daily runoff for the September 
 
 Two limitations can be identified: (1) days with low runoff tend to be overpredicted for both models, and (2) days with the highest runoff are underpredicted, as shown by the points falling below the line at high observed runoff, by the points falling above the line at low observed runoff, and by the comparison for the September 2009 storm. Additionally, the coefficient of the fractional impervious area component (PC2) is close to zero (−0.03), which indicates that the linear model does not detect an effect of urbanization on daily runoff at Suwanee Creek, even though the fractional impervious area increased substantially over the period of record. A linear model can only add a fixed amount of runoff for a given level of imperviousness, whereas imperviousness is expected to increase the runoff produced by each unit of rainfall.
 
+==  Decision Tree with Feature Selection and Cross Validation
+
+Two basins were considered for this evaluation: Suwanee Creek (USGS 02334885) and the Chattahoochee River at Helen (USGS 02330450) in the state of Georgia. They are similar in size but differ in land cover and rainfall (@basin-characteristics). Suwanee Creek basin urbanized rapidly from 1985 to 2023, with impervious cover rising from 5.6% to 30%. The Chattahoochee River at Helen basin stayed largely forested, with impervious cover below 1% throughout. Helen is also much wetter, receiving about 1,880 mm of rain a year compared to 1,360 mm/year at Suwanee. The annual rainfall in both basins (calculated as the average of pr_mean (mm/day) over all grid cells in each basin and aggregated annually) move closely together (correlation 0.88), as seen in @1dt_annual_rainfall_correlation.
+
+#figure(
+  table(
+    columns: (2fr, 1fr, 1.5fr),
+    align: (left, center, center),
+    table.header([*Basin Characteristic*], [*Suwanee Creek*], [*Chattahoochee at Helen*]),
+    [Drainage area (sq.mi.)], [47.1], [44.7],
+    [Impervious cover % (1985-2023)], [5.6 to 30], [$<1$],
+    [Annual mean rainfall (mm)], [1,360], [1,880],
+  ),
+  caption: [Basin Characteristics],
+) <basin-characteristics>
+
+#figure(
+  image("figures/Figure1dt_annual_rainfall_correlation.png", width: 100%),
+  caption: [Annual Rainfall of Suwanee and Chatthoochee River at Helen Basins (1985-2023)],
+) <1dt_annual_rainfall_correlation>
+
+=== Feature Selection 
+
+Initial features explored for analysis included daily GridMET climate variables averaged over each basin:  
+
+• precipitation ('pr_mean', 'pr_max', 'pr_min', 'pr_median')
+
+• minimum and maximum temperature ('tmmn_mean', 'tmmx_mean') 
+
+• solar radiation ('srad_mean') 
+
+• vapor pressure deficit ('vpd_mean') 
+
+• rainfall totals over the previous 2, 7 and 30 days ('rain_2day', 'rain_7day', 'rain_30day') 
+
+• flags for more than 1 inch (25.4 mm) of rain on the day or over 2 days ('heavy_rain_daily', 'heavy_rain_2day') 
+
+• the day of the year ('day_of_year') 
+
+• annual fraction impervious ('impervious_pct')
+
+
+Many of these features overlap, so Spearman correlations were plotted (@1dt_spearman_correlation) to remove the features most similar to each other.  
+
+#figure(
+  image("figures/Figure2dt_feature_correlation.png", width: 100%),
+  caption: [Spearman Correlations between Initial Features for Feature Selection],
+) <1dt_spearman_correlation>
+
+
+On reviewing the feature correlations, only nine features were selected for further analysis including pr_mean, rain_2day, rain_7day, rain_30day, tmmx_mean, srad_mean, vpd_mean, day_of_year and impervious_pct. Only pr_mean was kept due to high correlations with similar variables. A similar logic was used to keep only tmmx_mean. Features including flags for heavy rain were dropped because the decision tree will find its own cut points. 
+
+=== Model Development
+
+The DecisionTree Julia package was used to develop a decision tree for each basin. The data were separated into training (80%) and testing (20%) sets using a seeded random sample (seed 42) per basin.  
+
+A separate decision tree was developed for each basin using the remaining features, with the target of predicting high-discharge events. Discharge (cfs) is calculated using gage depth (mm/day) and basin area (sq mm). High-discharge events are defined as days when discharge exceeds the 90th percentile of the training data. These thresholds were calculated independently for each watershed (129 cfs at Suwanee and 244 cfs at Helen) because rainfall and flow differ greatly between the two basins.  
+
+A decision tree repeatedly splits the days into two groups using a yes/no question about one feature. Each split is chosen to make the groups as pure as possible, measured by the Gini index (Gini = 1 − Σ pₖ²). A Gini index of 0 means all days in the group are the same kind. Figure 3a shows an example for ‘rain_2day’. At Suwanee, splitting at about ‘rain2day’ = 24 mm brings the weighted Gini index to about 0.12. At Chatthoochee at Helen, the best ‘rain_2day’ split brings its index to about 0.15. 
+
+The number of levels in the tree was decided based on the 5-fold cross-validated F1 score (described under Model Performance) for depths of 1 to 10 (Figure 3b). Suwanee scores almost as well with a single split (F1 = 0.62) as at its best depth (F1 = 0.63 at four levels), while Helen improves steadily up to about six levels. Four levels were chosen as a balance between the two basins.  
+
+The decision trees for Suwanee basin and Chattahoochee by Helen basin are shown in Figure 4 and Figure 5 respectively. The predictions for both basins depend mostly on the rain variables. ‘impervious_pct’ shows not to negligible predictive importance for both watersheds, as well as ‘tmmx_mean’, ‘srad_mean’, ‘vpd_mean’ and ‘pr_mean’. This is because land use change is available only on an annual basis, so daily changes in runoff cannot be explained. Additional examination of the impact of landuse may include reviewing yearly runoff ratio (annual runoff depth divided by annual rainfall), analyzing stream flashiness, or looking at other basins. 
+
+#figure(
+  image("figures/Figure3dt_gini_split_and_tree_depth.png", width: 100%),
+  caption: [(a) Weighted Gini Example and (b) Cross-Validated F1 by Maximum Tree Depth],
+) <1dt_gini_split_and_tree_depth>
+
+#figure(
+  image("figures/Figure4dt_decision_tree_suwanee.png", width: 100%),
+  caption: [Decision tree for Suwanee basin],
+) <1dt_decision_tree_suwanee>
+
+#figure(
+  image("figures/Figure5dt_decision_tree_helen.png", width: 100%),
+  caption: [Decision tree for Chattahoochee by Helen basin],
+) <1dt_decision_tree_helen>
+
+=== Model Performance
+
+To evaluate how well the decision trees predict, four metrics were used: 
+
+• Accuracy, which is the share of all test days predicted correctly. Because only 10% of days are high flow, always predicting "normal" already scores about 90% (the baseline), so accuracy isn’t the best metric to assess performance in this case. 
+
+• Precision, which is ratio of true high flow days to the days predicted as high flow. Low precision indicates a lot of false negatives. 
+
+• Recall, which is ratio of true high flow days to the days that are actually high flow. Low recall indicates a lot of missed events. 
+
+• F1, which is a single score that balances precision and recall (calculated by their harmonic mean); it is high only when both are high. For this study, the F1 score is likely a better performance indicator than accuracy due to the relative rarity of high flow events. 
+
+The performance metrics are listed in Table 2.  
+
+Table 2: Decision Tree Performance on Test Set 
+#figure(
+  table(
+    columns: (2fr, 1fr, 1fr, 1fr, 1fr),
+    align: (left, center, center, center, center),
+    table.header([*Basin*], [*Accuracy*], [*Precision*], [*Recall*], [*F1*]),
+    [Suwanee Creek], [92.8%], [71%], [57%], [0.63],
+    [Chattahoochee at Helen], [92.9%], [66%], [47%], [0.55],
+  ),
+  caption: [Basin Characteristics],
+) <basin-characteristics>
+
+The decision tree models do only moderately better than guessing. They give relatively few false alarms (71% and 66% precisions) but miss a large number of high flow days (57% and 47% recall), especially at Chattahoochee at Helen. The decision tree model does somewhat better on the Suwanee basin than on the Chattahoochee at Helen basin (0.63 vs 0.55 F1s). 
+
 /*This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
 Multivariate regression will also be used to analyze the strength and confidence of correlations between the climate and the urbanization metrics as independent variables and runoff or stream flow as the dependent variable. The regression optimization model will assume linear relationships for all variables except where theory, industry standards, or analysis results establish a clear nonlinear relationship, such as the relationship between CN and runoff in the SCS equation.
 The above models will then be used to predict runoff under four cases: 
