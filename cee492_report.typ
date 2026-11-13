@@ -254,8 +254,8 @@ The daily discharge data was converted into runoff (mm/day) by dividing it by th
 Trendlines were fitted to the annual mean discharge values to determine if there is an increasing or decreasing trend for discharge per gage. The resulting trendlines are relatively flat, with low coefficient of determination (R²) values, ranging from 0.00 to 0.12. This means that yearly variability outweighs long-term changes based on observed discharge. However, the inconsistent availability of data among gage types for some watersheds (e.g., Yellow River near Snellville with a 16-year gap and other gages having complete records only from 2002), may limit the detection of long-term trends. This can be supported by seeing that Suwanee Creek, with continuous data from 1985 to 2023, showed one of the largest increases in annual mean discharge over time. Thus, the streamgage data should be interpreted with precipitation data to determine if the discharge has changed outside of wet or dry years.
 
 #figure(
-  caption: [Annual Mean Discharge for 14 Streamgages in Gwinnett County, GA],
-  image("figures/gage_figures.png", width: 90%),
+  caption: [Annual Mean Discharge for 15 Streamgages in Gwinnett County, GA],
+  image("figures/gage_figures.png", width: 87%),
   placement: top,
   scope: "parent",
   )
@@ -603,12 +603,12 @@ The $R^2$ values from the two models range from 0.52 to 0.59 for daily runoff. T
 
 The PCA regression has a slightly lower $R^2$ for daily runoff than the regression on all four variables (0.53 compared to 0.59 for the testing data), since it uses one fewer input variable. 
 
+The figure below compares observed and predicted daily runoff for the September 2009 storm, which is the same storm shown in the water balance regression section. This period falls within the training years, so the models are expected to perform well in predicting the data. The two models closely follow the smaller rises in runoff before and after the main storm. However, the observed runoff peaked at approximately 66 mm on September 21, whereas the predicted peaks were approximately 24 mm for the regression on all four variables and 21 mm for the PCA regression, and both occurred one day later.
+
 #figure(
   image("figures/suwanee_pca_sept2009.png", width: 100%),
   caption: [Observed and predicted daily runoff for Suwanee Creek during September 2009],
 ) <pca-sept2009>
-
-The figure above compares observed and predicted daily runoff for the September 2009 storm, which is the same storm shown in the water balance regression section. This period falls within the training years, so the models are expected to perform well in predicting the data. The two models closely follow the smaller rises in runoff before and after the main storm. However, the observed runoff peaked at approximately 66 mm on September 21, whereas the predicted peaks were approximately 24 mm for the regression on all four variables and 21 mm for the PCA regression, and both occurred one day later.
 
 Two limitations can be identified: (1) days with low runoff tend to be overpredicted for both models, and (2) days with the highest runoff are underpredicted, as shown by the points falling below the line at high observed runoff, by the points falling above the line at low observed runoff, and by the comparison for the September 2009 storm. Additionally, the coefficient of the fractional impervious area component (PC2) is close to zero (−0.03), which indicates that the linear model does not detect an effect of urbanization on daily runoff at Suwanee Creek, even though the fractional impervious area increased substantially over the period of record. A linear model can only add a fixed amount of runoff for a given level of imperviousness, whereas imperviousness is expected to increase the runoff produced by each unit of rainfall.
 
