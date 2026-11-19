@@ -390,8 +390,8 @@ The US Army Corps of Engineers (USACE) provides a lookup table for CN values bas
  Overall, the watersheds have steadily trended toward higher average CNs (see @cngraph), which predict lower rates of infiltration and higher rates of runoff during rainfall events. For some watersheds, the average CN has been stable for the past one or two decades, which is consistent with lessened changes in fractional impervious area, developed land cover, and forest cover in the time frame.
   
   #figure(
-  caption: [Mean Fractional Impervious Area by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/FctImp_meanByWatershed.png", width: 90%),
+  caption: [Mean Fractional Impervious Area by Watershed],
+  image("figures/land-cover/FctImp_meanSuwaneeHelen.png", width: 90%),
 ) <fctimpgraph>
 
 #figure(
@@ -420,16 +420,7 @@ Likewise, heatmaps reveal stark differences in fractional impervious area betwee
   ),
   caption: [Fractional Impervious Area in Gwinnett County, GA in 1985 vs 2024],
 ) <fig-fctimp>
-/*
-#figure(
-  image("figures/land-cover/FctImp1985.png", width: 100%),
-)
 
-#figure(
-  caption: [Fractional Impervious Area in Gwinnett County, GA in 1985 vs 2024],
-  image("figures/land-cover/FctImp2024.png", width: 100%),
-)
-*/
  In addition to land use and impervious area, the other factor which determines infiltration capacity for an area is the soil type. The SSURGO data are the only input in determining the maximum potential storage of rainwater within the water balance dataset. It is derived from the available water storage variable (AWS) variable within the SSURGO dataset and estimates the amount of water that can be stored within the soil that is available to plants. While the maximum AWS used for the water balance dataset is not provided, in general it is possible to estimate the value used by taking the maximum value over time for each grid cell.  By visual comparison on a sample watershed for USGS gage 02207120, the datasets do generally align as shown below.  However it should be noted that differences will exist because reprojection methods when developing the water- balance datasets are not publicly available.  In general, it appears the maximum soilwater value is higher than the value this project estimated from the SSURGO data, indicating that the maximum soilwater would be an appropriate way to estimate the maximum soil bucket input value if needed to recreate the water balance process. 
 
 #figure(
@@ -537,30 +528,61 @@ The figure documents several impacts of the modeling approach.  First, it confir
  Overall while adding the weights, specifically the weights on two or more days, improved the accuracy of the model in predicting flow, it still does not result in a well-calibrated model reflecting that additional work is needed to reflect the complicated hydrologic system upstream of a gage.  
 
  == Multiple Linear Regression Model with a Gabor Transform
- As seen in @annualdischarge, stream flow is highly oscillatory. At the same time, it is cyclic, with visible seasonable fluctuations. Stream flow is the sum of base flow, which originates from groundwater seepage, and runoff, which is directly related to precipitation as modeled by the curve number equation. Therefore, much of the variability in stream flow is due to the oscillatory and cyclic nature of precipitation. To reduce noise and focus on periodic flows, the stream flow, precipitation, and temperature data were transformed using a Gabor transform. This transform was applied only to the Suwanee Creek watershed due to its longer record of stream gage data but may be generalized to other watersheds. @normtimeseries shows time series plots of the normalized raw data, and Figure @powerspectra shows the frequency-domain graphs of the three variables produced by a Fast Fourier Transform (FFT). Two-day precipitation represents each day's precipitation plus the previous day's precipitation to account for an observed 1-day lag between peak precipitation and peak stream flow.
+ As seen in @annualdischarge, stream flow is highly oscillatory. At the same time, it is cyclic, with visible seasonable fluctuations. Stream flow is the sum of base flow, which originates from groundwater seepage, and runoff, which is directly related to precipitation as modeled by the curve number equation. Therefore, much of the variability in stream flow is due to the oscillatory and cyclic nature of precipitation. To reduce noise and focus on periodic flows, the stream flow, precipitation, and temperature data were transformed using a Gabor transform. This transform was applied only to the Suwanee Creek and the Chattahoochee River at Helen watwersheds but may be generalized to other watersheds. @normtimeseries shows time series plots of the normalized raw data.  @powerspectra shows frequency-domain graphs of the three variables produced by a Fast Fourier Transform (FFT). Two-day precipitation represents each day's precipitation plus the previous day's precipitation to account for an observed 1-day lag between peak precipitation and peak stream flow.
 
-#figure(
-  caption: [Normalized Daily Data, Suwanee Creek Watershed],
-  image("figures/gabor-transform/Suwanee-Norm-Gage-Precip-Temp.png"),
-) <normtimeseries>
-
-#figure(
-  caption: [Frequency-Domain Graphs, Suwanee Creek Watershed],
-  image("figures/gabor-transform/SuwaneePowerSpectra.png"),
-) <powerspectra>
-
-The frequency with the greatest amplitude for both stream flow and minimum temperature is 1/year. This aligns with the fact that precipitation and temperature are seasonal, or yearly periodic. While precipitation itself is more random (its three highest FFT frequencies are 21/year, 9/year, and 2/year), stream flow typically captures a smoother trend in precipitation-induced runoff due to the buffering effect of the watershed. 
+ The frequency with the greatest amplitude for both stream flow and minimum temperature is 1/year. This aligns with the fact that precipitation and temperature are seasonal, or yearly periodic. While precipitation itself is more random, stream flow typically captures a smoother trend in precipitation-induced runoff due to the buffering effect of the watershed. 
 
 Thus, a Gabor transform was applied to stream flow, precipitation, and temperature to analyze the change in 1/year frequency data over time. A relatively large standard deviation of 10 days (i.e. 10 samples) was used for the moving Gaussian window to favor frequency resolution over temporal resolution.
 
-#figure(
-  caption: [Amplitudes of Gabor-Transformed Data at 1/year Frequency and Fractional Impervious Area, Suwanee Creek Watershed],
-  image("figures/gabor-transform/SuwaneeGaborMatrixAnnualFreq.png"),
+#place(
+  bottom + center,
+  scope: "parent",
+  float: true,
+  clearance: 0.8em,
+  stack(
+    dir: ttb,
+    spacing: 0.8em,
+
+    [#figure(
+      grid(
+        columns: (1fr, 1fr),
+        gutter: 1em,
+        image("figures/gabor-transform/Suwanee-Norm-Gage-Precip-Temp.png", width: 100%),
+        image("figures/gabor-transform/Helen-Norm-Gage-Precip-Temp.png", width: 100%),
+      ),
+      caption: [Normalized Daily Data, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
+    )<normtimeseries>],
+
+    [#figure(
+      grid(
+        columns: (1fr, 1fr),
+        gutter: 1em,
+        image("figures/gabor-transform/SuwaneePowerSpectra.png", width: 100%),
+        image("figures/gabor-transform/HelenPowerSpectra.png", width: 100%),
+      ),
+      caption: [Frequency-Domain Graphs, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
+    )<powerspectra>],
+  )
 )
 
-#figure(
-  caption: [Spectrogram of Stream Flow, Suwanee Creek Watershed],
-  image("figures/gabor-transform/SuwaneeRunoffSpectrogram.png"),
+#place(
+  top + center,
+  scope: "parent",
+  float: true,
+  clearance: 1.5em,
+  stack(
+    dir: ttb,
+    spacing: 0.8em,
+    [#figure(
+      grid(
+        columns: (1fr, 1fr),
+        gutter: 1em,
+        image("figures/gabor-transform/SuwaneeGaborMatrixAnnualFreq.png", width: 100%),
+        image("figures/gabor-transform/HelenGaborMatrixAnnualFreq.png", width: 100%),
+      ),
+      caption: [Amplitudes of Gabor-Transformed Data at 1/year Frequency and Fractional Impervious Area, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
+    )],
+  )
 )
 
 The Gabor-transformed variables, plus fractional impervious area, were passed into a multiple linear regression model of the form:
@@ -571,64 +593,128 @@ Where $S_"Gabor"$ is Gabor-transformed streamflow, $P_"Gabor"$ is Gabor-transfor
 
 === Training on 80% of Data
 
-20% of the data was withheld for testing using a Xoshiro random number generator with a seed of 42 from the Random Julia package. The regression model was trained on the other 80% of the data, utilizing the GLM Julia package.
+For each watershed, 20% of the data was withheld for testing using a Xoshiro random number generator with a seed of 42 from the Random Julia package. The regression model was trained on the other 80% of the data, utilizing the GLM Julia package.
 
-The model yielded the coefficients in the left side of @gabor-lm-coeff. The linear model was then used to predict stream flow for the testing data, as shown in @gabor-predictions. Performance metrics are summarized in @gabor-error.
+The models yielded the coefficients in @gabor-coeff-80. The linear models were then used to predict stream flow for the testing data, as shown in @gabor-predictions. Performance metrics are summarized in @gabor-error-80, where MAPE is Mean Absolute Percentage Error and RMSE is Root Mean Square Error.
+
+#place(
+  bottom + center,
+  scope: "parent",
+  float: true,
+  clearance: 0.5em,
+  stack(
+    dir: ttb,
+    spacing: 0.5em,
+
+    [#figure(
+      grid(
+        columns: (1fr, 1fr),
+        gutter: 1em,
+        image("figures/gabor-transform/SuwaneeLMPrediction.png", width: 100%),
+        image("figures/gabor-transform/HelenLMPrediction.png", width: 100%),
+      ),
+      caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1/year Frequency, Tested on 20% of Data, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
+    )<gabor-predictions>],
+  )
+)
+
+#place(
+  top + center,
+  scope: "parent",
+  float: true,
+  clearance: 1em,
+  stack(
+    dir: ttb,
+    spacing: 1em,
+    [#figure(
+      grid(
+        columns: (1fr, 1fr),
+        gutter: 1em,
+        image("figures/gabor-transform/SuwaneeLMPredictionPost2010.png", width: 100%),
+        image("figures/gabor-transform/HelenLMPredictionPost2010.png", width: 100%),
+      ),
+      caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1/year Frequency, Tested on 2010-2024 Data, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
+    )],
+  )
+)
 
 #figure(
-  caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1/year Frequency, Tested on 20% of Data, Suwanee Creek Watershed],
-  image("figures/gabor-transform/SuwaneeLMPrediction.png"),
-) <gabor-predictions>
-
-
-=== Training on Pre-2020 Data
-
-The same linear model was trained on data before 2020 and tested on data from 2020-2024, resulting in the coefficients on the right side of @gabor-lm-coeff.
-
-The model trained on pre-2020 data had slightly worse performance in predicting its testing data, but much lower error in predicting the post-2020 training data, most likely due to longer timespan and greater variation in weather and streamflow patterns in the pre-2020 years.
+  caption: [Gabor Linear Model Coefficients, Trained on 80% of Data],
+  table(
+    columns: (auto, auto, auto, auto, auto, auto, auto,),
+    align: (center+horizon, center+horizon, center+horizon,),
+    table.header(
+      table.cell(rowspan:2)[*Variable*],
+      table.cell(colspan:3)[*Suwanee Creek Watershed*],
+      table.cell(colspan:3)[*Chattahoochee River at Helen Watershed*],
+      [*Coeff.*], [*t-score*], [*Pr(>|t|)*],
+      [*Coeff.*], [*t-score*], [*Pr(>|t|)*]),
+    "Intercept", "8.761e-4", "17.48", "<1e-66",     "4.124e-3", "38.66", "<1e-99", 
+      $P_"Gabor"$, "2.296e-1", "157.34", "<1e-99",   "2.192e-1", "94.79", "<1e-99",
+      $T_"Gabor"$, "-4.594e-2", "-61.00", "<1e-99",  "-8.030e-2", "-43.98", "<1e-99",
+      $F$, "3.834e-4", "21.07", "<1e-95",            "5.034e-4", "13.44", "<1e-40"
+  ),
+) <gabor-coeff-80>
 
 #figure(
-  caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1/year Frequency, Tested on 2020-2024 Data, Suwanee Creek Watershed],
-  image("figures/gabor-transform/SuwaneeLMPredictionPost2024.png"),
-) 
+  caption: [Gabor Linear Model Metrics, Trained on 80% of Data],
+  table(
+    columns: (35mm, auto, auto,),
+    align: (center+horizon, center+horizon, center+horizon,),
+    table.header(
+      table.cell()[*Variable*],
+      table.cell[*Suwanee Creek*],
+      table.cell[*Chattahoochee R.*],),
+    $R^2$, "0.72", "0.51",
+    [MAPE on Training Data], "44.17%", "42.91%",
+    "MAPE on Testing Data", "45.96%", "43.98%",
+    [RMSE on Training Data], "1.946e-3","4.003e-3",
+    "RMSE on Testing Data", "1.985e-3", "4.067e-3",
+  ),
+) <gabor-error-80>
+
+=== Training on Pre-2010 Data
+
+For each watershed, the linear model was also trained on data before 2010 and tested on data from 2010-2024, resulting in the coefficients in @gabor-coeff-2010 and performance metrics in @gabor-error-2010.
+
+The models trained on pre-2010 data had slightly worse performance in predicting their testing data, but slightly lower error in predicting the post-2010 training data, most likely due to greater variation in weather and streamflow patterns in the pre-2010 years.
 
 #figure(
-    caption: [Gabor-Transformed Linear Model Coefficients],
+    caption: [Gabor Linear Model Coefficients, Trained on Pre-2010 Data],
     table(
       columns: (auto, auto, auto, auto, auto, auto, auto,),
       align: (center+horizon, center+horizon, center+horizon,),
       table.header(
         table.cell(rowspan:2)[*Variable*],
-        table.cell(colspan:3)[*Model Trained on 80% of Data*],
-        table.cell(colspan:3)[*Model Trained on Pre-2020 Data*],
+        table.cell(colspan:3)[*Suwanee Creek Watershed*],
+      table.cell(colspan:3)[*Chattahoochee River at Helen Watershed*],
         [*Coeff.*], [*t-score*], [*Pr(>|t|)*],
         [*Coeff.*], [*t-score*], [*Pr(>|t|)*]),
-      "Intercept", "8.761e-4", "17.48", "<1e-66", "8.604e-4", "17.60", "<1e-67", 
-       $P_"Gabor"$, "2.296e-1", "157.34", "<1e-99",       "2.270e-1", "157.79", "<1e-99",
-       $T_"Gabor"$, "-4.594e-2", "-61.00", "<1e-99",      "-4.454e-2", "-60.54", "<1e-99",
-       $F$, "3.834e-4", "21.07", "<1e-95",        "3.379e-4", "17.90", "<1e-95"
+      "Intercept", "9.202e-4", "14.81", "<1e-48",     "4.241e-3", "37.73", "<1e-99", 
+       $P_"Gabor"$, "2.257e-1", "125.91", "<1e-99",   "2.046e-1", "84.11", "<1e-99",
+       $T_"Gabor"$, "-4.309e-2", "-46.90", "<1e-99",  "-7.953e-2", "-41.63", "<1e-99",
+       $F$, "4.099-4", "14.52", "<1e-46",             "1.134e-4", "2.29", "0.0219"
     ),
-  ) <gabor-lm-coeff>
+  ) <gabor-coeff-2010>
 
 #figure(
-    caption: [Gabor-Transformed Linear Model Error Metrics],
+    caption: [Gabor Linear Model Metrics, Trained on Pre-2010 Data],
     table(
       columns: (35mm, auto, auto, ),
       align: (center+horizon, center+horizon, center+horizon,),
       table.header(
         table.cell()[*Variable*],
-        table.cell[*Model Trained on 80% of Data*],
-        table.cell[*Model Trained on Pre-2020 Data*],),
-      $R^2$, "0.72", "0.70",
-      [MAPE#super[a] on Training Data], "44.17%", "47.28%",
-      "MAPE on Testing Data", "45.96%", "19.11%",
-      [RSME#super[b] on Training Data], "1.946e-3","2.004e-3",
-      "RSME on Testing Data", "1.985e-3", "1.520e-3",
-      table.cell(colspan:3, align:left)[a. Mean Absolute Percentage Error \ b. Root Mean Square Error],
+        table.cell[*Suwanee Creek Watershed*],
+        table.cell[*Chattahoochee River at Helen Watershed*],),
+      $R^2$, "0.67", "0.50",
+      [MAPE on Training Data], "52.07%", "42.91%",
+      "MAPE on Testing Data", "30.98%", "38.94%",
+      [RSME on Training Data], "2.098e-3","3.688e-3",
+      "RSME on Testing Data", "1.682e-3", "4.646e-3",
     ),
-  ) <gabor-error>
+  ) <gabor-error-2010>
 
-Both models confirm that precipitation is more strongly correlated with stream flow than temperature and fractional impervious area. However, both models have relatively low R#super[2] values and, in most cases, large mean absolute percentage error (MAPE) values between predictions and actual data. Nevertheless, the R#super[2] values are an improvement upon linear models without Gabor transforms. In addition, the large errors are generally due the model underpredicting extreme peaks and troughs in the real data. A linear model on one frequency column of a Gabor-transform would not be able to predict stream flows at other frequencies, but it does offer an interpretable model to understand amplitudes of seasonal or other periodic flows as a function of precipitation, temperature and fractional impervious area.
+All models confirm that precipitation is more strongly correlated with stream flow than temperature and fractional impervious area. However, the models have relatively low R#super[2] values and, in most cases, large mean absolute percentage error (MAPE) values between predictions and actual data. Nevertheless, the R#super[2] values are an improvement upon linear models without Gabor transforms. In addition, the large errors are generally due the model underpredicting extreme peaks and troughs in the real data. A linear model on one frequency column of a Gabor-transform would not be able to predict stream flows at other frequencies, but it does offer an interpretable model to understand amplitudes of seasonal or other periodic flows as a function of precipitation, temperature and fractional impervious area.
 
  == Multiple Linear Regression Model with Principal Component Analysis
 
