@@ -258,7 +258,7 @@ Trendlines were fitted to the annual mean discharge values to determine if there
   image("figures/gage_figures.png", width: 90%),
   placement: top,
   scope: "parent",
-  )
+  )<annualdischarge>
 
 Processing the stream average daily discharge (cfs)  into an average runoff amount per square mile per day per year  (mm/year) facilitates comparison to the water balance dataset.  The  gridded water balance daily dataset was also processed into an average value per day per year per watershed.  In comparing the two datasets, it is clear the gage data has significantly more variability between the gages than the water balance dataset as shown in @standard-deviation.  
 
@@ -391,22 +391,22 @@ The US Army Corps of Engineers (USACE) provides a lookup table for CN values bas
   
   #figure(
   caption: [Mean Fractional Impervious Area by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/FctImp_meanByWatershed.png", height: 100%),
+  image("figures/land-cover/FctImp_meanByWatershed.png", width: 100%),
 ) <fctimpgraph>
 
 #figure(
   caption: [Percentage of Medium Intensity Developed Land Cover by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/DevelopedMediumIntensity_percentByWatershed.png", height: 100%),
+  image("figures/land-cover/DevelopedMediumIntensity_percentByWatershed.png", width: 100%),
 ) <medintdevgraph>
 
 #figure(
   caption: [Percentage of Deciduous Forest Land Cover by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/DeciduousForest_percentByWatershed.png", height: 100%),
+  image("figures/land-cover/DeciduousForest_percentByWatershed.png", width: 100%),
 ) <decforestgraph>
 
 #figure(
   caption: [Mean Curve Number by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/CN_meanByWatershed.png", height: 100%),
+  image("figures/land-cover/CN_meanByWatershed.png", width: 100%),
 ) <cngraph>
 
 Likewise, heatmaps in @fig-fctimp reveal stark differences in fractional impervious area between 1985 and 2024, as well as the spatial distribution of urbanization.
