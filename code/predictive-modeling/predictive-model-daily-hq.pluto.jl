@@ -119,6 +119,12 @@ begin
 end
 
 
+# ╔═╡ 7794077d-8065-426e-b3df-a32bc6c742c2
+begin
+    df_lc_helen = CSV.read("../land-cover-dataset-work/land_cover_annual_Helen.csv", DataFrame)
+    df_lc_helen = outerjoin(df_land_cover_helen, df_lc_helen, on = [:year, :gage]);
+end
+
 # ╔═╡ 80abbe13-cb1a-4766-9c76-941828a9ad3f
 #VSCODE-MARKDOWN
 md"""
@@ -205,6 +211,18 @@ begin
     @df df_daily_norm corrplot([:pr_mean :aet_avg :soilwater_avg :tmmn_mean :tmmx_mean :srad_mean :vpd_mean :fct_imp :runoff], size=(1000,1000))
 	savefig("../../hq-figures/CorrelationPlotDaily.png")
 end
+
+# ╔═╡ 58423754-d078-48ff-9743-dc025f241339
+begin
+    df_lc = CSV.read("../land-cover-dataset-work/land_cover_annual_with_CN.csv", DataFrame)
+    @df df_lc Plots.scatter(:FctImp_mean, :CN_mean)
+end
+
+# ╔═╡ d18911fb-793f-4f1e-83bc-6fcb91cb6bb2
+lc_lm = lm(@formula(CN_mean ~ FctImp_mean), df_lc)
+
+# ╔═╡ 7c3fd36b-2d70-4b57-a18f-230f07ab69c3
+r2(lc_lm)
 
 # ╔═╡ 5c62c5c1-d1e9-41a1-97df-9b3e6822cdfa
 #VSCODE-MARKDOWN
@@ -621,6 +639,7 @@ r2(rE20_lm)
 # ╠═7a28d218-e661-4626-85e6-9f47f72f6744
 # ╠═2d9fca60-9d9f-4af2-b892-d69e71f0c9fd
 # ╠═45995b8e-0e0c-44b6-8459-c61209972027
+# ╠═7794077d-8065-426e-b3df-a32bc6c742c2
 # ╠═80abbe13-cb1a-4766-9c76-941828a9ad3f
 # ╠═a1e8749f-24c4-456e-8e6b-e8551de4638a
 # ╠═6189e3e7-5e54-4a72-a6be-c463ea78d85c
@@ -629,6 +648,9 @@ r2(rE20_lm)
 # ╠═ad5c2f44-6c05-4cd7-99d1-5bdc74a4f409
 # ╠═d90890d1-e5d3-46f4-9613-6b8c77ffc69f
 # ╠═5f525f7d-2eb2-4055-8122-aac357e596e3
+# ╠═58423754-d078-48ff-9743-dc025f241339
+# ╠═d18911fb-793f-4f1e-83bc-6fcb91cb6bb2
+# ╠═7c3fd36b-2d70-4b57-a18f-230f07ab69c3
 # ╠═5c62c5c1-d1e9-41a1-97df-9b3e6822cdfa
 # ╠═62549229-5535-4a8d-9ffc-b4db51ee4cb7
 # ╠═30d5d0bc-acdd-4425-90d3-85c6dbe83463

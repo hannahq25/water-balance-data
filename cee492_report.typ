@@ -61,13 +61,13 @@ This project explores a collection of water and climate datasets to evaluate the
  Climate projections typically utilize an ensemble of datasets, simulations, or models to improve performance and reduce uncertainty. Therefore, the MACA data will be supported by annual ensemble data from Climate Explorer, a tool built by the Environmental Protection Agency (EPA), NASA, National Oceanic and Atmospheric Administration (NOAA), and the US Geological Survey (USGS) and hosted by the National Environmental Modeling and Analysis Center (NEMAC) at the University of North Carolina Asheville. The tool provides historical climate conditions across the US based on observations at weather stations and projected climate conditions based on global climate models for the Coupled Model Intercomparison Project Phase 5 (CMIP5) under RCP 4.5 and RCP 8.5. Annual, locality-specific data can be downloaded through the online Climate Explorer tool @ClimateExplorer. 
 */
  == Soil Survey Geographic Database (SSURGO) <ssurgo-intro>
-Runoff is impacted not only by climate, but also by soil conditions. Data on soil properties across CONUS are available through the Natural Resources Conservation Service's (NRCS) Soil Survey Geographic Database (SSURGO).  While the dataset has been updated over the years, there is no time dimension to the data unlike the other datasets discussed above.  The dataset categorizes areas spatially by soil type and provides tables detailing the properties of each soil type. The two primary variables that will be used as part of this project are the Hydrologic Soil Group and the Available Water Storage.  Both variables express the infiltration capacity of the soil type.  Hydrologic Soil Group expresses the soil type as either A, B, C, or D, with A being the most permeable and D being the least permeable.  Available Water Storage expresses the amount of water that can be stored for use by plants up to a certain depth in the soil and stores the value in millimeters (mm), typically ranging between 0 and 250 mm.  SSURGO data are available in statewide datasets from the NRCS website @SSURGO. 
+Runoff is impacted not only by climate, but also by soil conditions. Data on soil properties across CONUS are available through the Natural Resources Conservation Service's (NRCS) Soil Survey Geographic Database (SSURGO).  While the dataset has been updated over the years, there is no time dimension to the data, unlike the other datasets discussed above.  The dataset categorizes areas spatially by soil type and provides tables detailing the properties of each soil type. The two primary variables used as part of this project are the Hydrologic Soil Group and the Available Water Storage.  Both variables express the infiltration capacity of the soil type.  Hydrologic Soil Group expresses the soil type as either A, B, C, or D, with A being the most permeable and D being the least permeable.  Available Water Storage expresses the amount of water that can be stored for use by plants up to a certain depth in the soil and stores the value in millimeters (mm), typically ranging between 0 and 250 mm.  SSURGO data are available in statewide datasets from the NRCS website @SSURGO. 
 
 == Annual National Land Cover Database Collection 1.2  (NLCD)
  While not utilized in the Daily Water Balance, the other major variable typically used when evaluating infiltration capacity is land use.  Land use data predicts infiltration capacity by identifying: (a) impervious surfaces, where no infiltration is possible, (b) barren land, which has moderate infiltration capacity, and (c) different types of vegetative cover, which have greater capacities to intercept and absorb rainfall. The US Geological Survey (USGS) has classified land cover and surface change characteristics across CONUS by applying geospatial deep learning algorithms to the Landsat satellite imagery record @NLCDUserGuide. The resulting data are available in the Annual NLCD Collection 1.2 on an annual basis, beginning in 1985. The Land Cover Classification and Fractional Impervious Surface products in the dataset are used in this project. The data are available to view and download through multiple platforms, including the Multi-Resolution Land Characteristics (MRLC) Web Viewer @MRLCViewer.
 
 == USGS Water Data for the Nation (USGS Gage Data)
- While the Daily Water Balance dataset estimates runoff, it will be critical to validate the model results against observed runoff.  Observed runoff can be estimated from stream gages.  The USGS collects and distributes stream gage data for gages across CONUS.  Each gage has a unique site number and varying period of record and data collected.  For this project, the daily mean discharge was incorporated as the best dataset to validate the Daily Water Balance runoff estimates.  The USGS maintains a website for each gage and users can obtain data directly through the website or other Application Programming Interfaces (APIs).  
+ While the Daily Water Balance dataset estimates runoff, it is critical to validate the model results against observed runoff.  Observed runoff can be estimated from stream gages.  The USGS collects and distributes stream gage data for gages across CONUS.  Each gage has a unique site number and varying period of record and data collected.  For this project, the daily mean discharge was incorporated as the best dataset to validate the Daily Water Balance runoff estimates.  The USGS maintains a website for each gage and users can obtain data directly through the website or other Application Programming Interfaces (APIs).  
 //  For example, the USGS Gage 02207120, Yellow River at GA 124, Near Lithonia, GA, has daily mean discharge for April 26, 1996 to present @02207120
 
  For each gage, the USGS also maintains its spatial watershed boundary in GeoJSON format, which can be accessed through its API @USGSAPI.
@@ -202,7 +202,7 @@ The SSURGO dataset, accessed as a statewide database for Georgia as part of this
 The GeoTIFF used for this project was in a 10m resolution in the European Petroleum Survey Group (EPSG) projection number 5070, also known as the NAD83 / Conus Albers projection. 
 
 == NLCD
-The NLCD data are provided as Cloud-Optimized GeoTIFF (COG) files. Each GeoTIFF image corresponds to a year and a land cover variable. The table below shows the legend for Land Cover values according to the Annual NLCD Collection 1 Science Product User Guide @NLCDUserGuide.
+The NLCD data are provided as Cloud-Optimized GeoTIFF (COG) files. Each GeoTIFF image corresponds to a year and a land cover variable. @nlcd-legend shows the legend for Land Cover values according to the Annual NLCD Collection 1 Science Product User Guide @NLCDUserGuide.
 
 #figure(
   caption: [NLCD Land Cover Legend],
@@ -220,7 +220,7 @@ The NLCD data are provided as Cloud-Optimized GeoTIFF (COG) files. Each GeoTIFF 
     "31", "Barren Land (Rock/Sand/Clay)", "95", "Emergent Herbaceous Wetlands",
     "41", "Deciduous Forest",
   ),
-)
+) <nlcd-legend>
 
 The data values for Fractional Impervious Area range from 0-100, representing the percentage of a 30-meter pixel that is covered with impervious surfaces. 
 
@@ -342,9 +342,9 @@ In comparing mean fractional impervious area and minimum temperature, it is seen
   image("figures/Tmmn_vs_ImpFrac_v2.png", width: 100%),
   ) <Tmmn_vs_ImpFrac>
 
-== Infiltration Capacity
+== Infiltration Capacity <infiltration-capacity>
 
-For nearly all watersheds in Gwinnett County, the NLCD data shows a rapid increase in fractional impervious areas between 1985 and the early 2000s, followed by a slower rate of growth after 2010 (see @fctimpgraph). Percentages of developed land cover follow a similar trend as fractional impervious area (see @medintdevgraph). This trend is mirrored by declines in deciduous forest land cover that plummet until the early 2000s and decrease more gradually decreased after (see @decforestgraph). These patterns \indicate a surge in urbanization, including land development and deforestation, through the early 2000s and steady urbanization from the early 2000s to the present.
+For nearly all watersheds in Gwinnett County, the NLCD data shows a rapid increase in fractional impervious area between 1985 and the early 2000s, followed by a slower rate of growth after 2010 (see @fctimpgraph). Percentages of developed land cover follow a similar trend as fractional impervious area (see @medintdevgraph). This trend is mirrored by declines in deciduous forest land cover that fall sharply until the early 2000s and decline more gradually afterward (see @decforestgraph). These patterns indicate a surge in urbanization, including land development and deforestation, through the early 2000s and steady urbanization from the early 2000s to the present.
 
 Rather than tracking all land cover classes over time, the Soil Conservation Service (SCS) Curve Number may be used to capture the totality of land use changes across all land use types and relate them to runoff and infiltration. According to NRCS' Technical Release 55 (TR-55) @tr55, runoff may be modeled as a function of precipitation and watershed characteristics using the SCS Curve Number method, which states:
 
@@ -359,7 +359,7 @@ The US Army Corps of Engineers (USACE) provides a lookup table for CN values bas
 #figure(
     caption: [Curve Number Lookup Table],
     table(
-      columns: (25%,auto, 10%, 10%, 10%, 10%,),
+      columns: (20%,auto, 10%, 10%, 10%, 10%,),
       align: (center+horizon, left+horizon, center+horizon, center+horizon, center+horizon, center+horizon),
       table.header(
         table.cell(rowspan:2)[*Land Cover Value*],
@@ -391,7 +391,7 @@ The US Army Corps of Engineers (USACE) provides a lookup table for CN values bas
   
   #figure(
   caption: [Mean Fractional Impervious Area by Watershed],
-  image("figures/land-cover/FctImp_meanSuwaneeHelen.png", width: 90%),
+  image("figures/land-cover/FctImp_meanByWatershed.png", width: 90%),
 ) <fctimpgraph>
 
 #figure(
@@ -405,11 +405,11 @@ The US Army Corps of Engineers (USACE) provides a lookup table for CN values bas
 ) <decforestgraph>
 
 #figure(
-  caption: [Mean Curve Number by Watershed in Gwinnett County, GA],
+  caption: [Mean Curve Number by Watershed, GA],
   image("figures/land-cover/CN_meanByWatershed.png", width: 90%),
 ) <cngraph>
 
-Likewise, heatmaps reveal stark differences in fractional impervious area between 1985 and 2024, as well as the spatial distribution of urbanization.
+Likewise, heatmaps in @fig-fctimp reveal stark differences in fractional impervious area between 1985 and 2024, as well as the spatial distribution of urbanization.
 
 #figure(
   stack(
@@ -528,14 +528,18 @@ The figure documents several impacts of the modeling approach.  First, it confir
  Overall while adding the weights, specifically the weights on two or more days, improved the accuracy of the model in predicting flow, it still does not result in a well-calibrated model reflecting that additional work is needed to reflect the complicated hydrologic system upstream of a gage.  
 
  == Multiple Linear Regression Model with a Gabor Transform
- As seen in @annualdischarge, stream flow is highly oscillatory. At the same time, it is cyclic, with visible seasonable fluctuations. Stream flow is the sum of base flow, which originates from groundwater seepage, and runoff, which is directly related to precipitation as modeled by the curve number equation. Therefore, much of the variability in stream flow is due to the oscillatory and cyclic nature of precipitation. To reduce noise and focus on periodic flows, the stream flow, precipitation, and temperature data were transformed using a Gabor transform. This transform was applied only to the Suwanee Creek and the Chattahoochee River at Helen watwersheds but may be generalized to other watersheds. @normtimeseries shows time series plots of the normalized raw data.  @powerspectra shows frequency-domain graphs of the three variables produced by a Fast Fourier Transform (FFT). Two-day precipitation represents each day's precipitation plus the previous day's precipitation to account for an observed 1-day lag between peak precipitation and peak stream flow.
+ As seen in @annualdischarge, stream flow is highly oscillatory. At the same time, it is cyclic, with visible seasonal fluctuations. Stream flow is the sum of base flow, which originates from groundwater seepage, and runoff, which is directly related to precipitation. Therefore, much of the variability in stream flow is due to the oscillatory and cyclic nature of precipitation. To reduce noise and focus on periodic flows, the stream flow, precipitation, and temperature data were transformed using a Gabor transform. This transform was applied only to the Suwanee Creek and the Chattahoochee River at Helen watwersheds but may be generalized to other watersheds. 
+ 
+ First, the stream flow, precipitation, and temperature variables were analyzed for their dominant frequencies. @normtimeseries shows time series plots of the normalized raw data for each watershed.  @powerspectra shows frequency-domain graphs of the three variables produced by a Fast Fourier Transform (FFT). Two-day precipitation represents each day's precipitation plus the previous day's precipitation to account for an observed 1-day lag between peak precipitation and peak stream flow.
 
- The frequency with the greatest amplitude for both stream flow and minimum temperature is 1/year. This aligns with the fact that precipitation and temperature are seasonal, or yearly periodic. While precipitation itself is more random, stream flow typically captures a smoother trend in precipitation-induced runoff due to the buffering effect of the watershed. 
+ The frequency with the greatest amplitude for both stream flow and minimum temperature is 1 year#super[-1]. This aligns with the physical reality that precipitation and temperature are seasonal, or yearly periodic. While precipitation itself is more random, stream flow typically captures a smoother trend in precipitation-induced runoff due to the buffering effect of the stream's watershed. 
 
-Thus, a Gabor transform was applied to stream flow, precipitation, and temperature to analyze the change in 1/year frequency data over time. A relatively large standard deviation of 10 days (i.e. 10 samples) was used for the moving Gaussian window to favor frequency resolution over temporal resolution.
+Then, a Gabor matrix was calculated for each variable. A relatively large standard deviation of 10 days (i.e. 10 samples) was used for the moving Gaussian window to favor frequency resolution over temporal resolution. For each matrix, the column representing amplitudes at a frequency of 1 year#super[-1] was extracted. This frequency column, referred to hereon as the Gabor-transformed data, tracks yearly periodic data over time. The Gabor-transformed data for each variable is depicted in @gaboramplitudes. 
+
+In addition, fractional impervious area was selected as a variable that quantifies urbanization over time, in order to compare the effects of urbanization and climate variables on Gabor-transformed runoff. In @infiltration-capacity, CN was introduced as an aggregate metric of infiltration capacity in a watershed. A linear regression between the annual CNs and fractional impervious areas of all watersheds from 1985-2025 yields an R#super[2] of 0.93, indicating that CN and fractional impervious area are confounded and only one should be used in a regression model. Since calculating one CN value for a watershed involves more rounding error than calculating the mean fractional impervious area, the latter was selected was and is shown in @gaboramplitudes. Note that fractional impervious area increases over time for both  watersheds, but its magnitude is neglible in Chattahoochee River at Helen compared to Suwanee Creek.
 
 #place(
-  bottom + center,
+  top + center,
   scope: "parent",
   float: true,
   clearance: 0.8em,
@@ -547,8 +551,8 @@ Thus, a Gabor transform was applied to stream flow, precipitation, and temperatu
       grid(
         columns: (1fr, 1fr),
         gutter: 1em,
-        image("figures/gabor-transform/Suwanee-Norm-Gage-Precip-Temp.png", width: 100%),
-        image("figures/gabor-transform/Helen-Norm-Gage-Precip-Temp.png", width: 100%),
+        image("figures/gabor-transform/Suwanee-Norm-Gage-Precip-Temp.png", width: 95%),
+        image("figures/gabor-transform/Helen-Norm-Gage-Precip-Temp.png", width: 95%),
       ),
       caption: [Normalized Daily Data, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
     )<normtimeseries>],
@@ -557,39 +561,49 @@ Thus, a Gabor transform was applied to stream flow, precipitation, and temperatu
       grid(
         columns: (1fr, 1fr),
         gutter: 1em,
-        image("figures/gabor-transform/SuwaneePowerSpectra.png", width: 100%),
-        image("figures/gabor-transform/HelenPowerSpectra.png", width: 100%),
+        image("figures/gabor-transform/SuwaneePowerSpectra.png", width: 95%),
+        image("figures/gabor-transform/HelenPowerSpectra.png", width: 95%),
       ),
       caption: [Frequency-Domain Graphs, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
     )<powerspectra>],
-  )
-)
 
-#place(
-  top + center,
-  scope: "parent",
-  float: true,
-  clearance: 1.5em,
-  stack(
-    dir: ttb,
-    spacing: 0.8em,
     [#figure(
       grid(
         columns: (1fr, 1fr),
         gutter: 1em,
-        image("figures/gabor-transform/SuwaneeGaborMatrixAnnualFreq.png", width: 100%),
-        image("figures/gabor-transform/HelenGaborMatrixAnnualFreq.png", width: 100%),
+        image("figures/gabor-transform/SuwaneeGaborMatrixAnnualFreq.png", width: 95%),
+        image("figures/gabor-transform/HelenGaborMatrixAnnualFreq.png", width: 95%),
       ),
-      caption: [Amplitudes of Gabor-Transformed Data at 1/year Frequency and Fractional Impervious Area, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
-    )],
+      caption: [Amplitudes of Gabor-Transformed Data at 1 year#super[-1] Frequency and Fractional Impervious Area, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
+    )<gaboramplitudes>],
   )
 )
 
+// #place(
+//   top + center,
+//   scope: "parent",
+//   float: true,
+//   clearance: 1.5em,
+//   stack(
+//     dir: ttb,
+//     spacing: 0.8em,
+//     [#figure(
+//       grid(
+//         columns: (1fr, 1fr),
+//         gutter: 1em,
+//         image("figures/gabor-transform/SuwaneeGaborMatrixAnnualFreq.png", width: 100%),
+//         image("figures/gabor-transform/HelenGaborMatrixAnnualFreq.png", width: 100%),
+//       ),
+//       caption: [Amplitudes of Gabor-Transformed Data at 1/year Frequency and Fractional Impervious Area, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
+//     )],
+//   )
+// )
+
 The Gabor-transformed variables, plus fractional impervious area, were passed into a multiple linear regression model of the form:
 
-$ S_"Gabor" = P_"Gabor" + T_"Gabor" + F $
+$ S_"Gabor" = a_0 + a_1 P_"Gabor" + a_2 T_"Gabor" + a_3 F $
 
-Where $S_"Gabor"$ is Gabor-transformed streamflow, $P_"Gabor"$ is Gabor-transformed precipitation, $T_"Gabor"$ is Gabor-transformed temperature, and $F$ is mean fractional impervious area.
+Where $S_"Gabor"$ is Gabor-transformed streamflow, $P_"Gabor"$ is Gabor-transformed precipitation, $T_"Gabor"$ is Gabor-transformed temperature, $F$ is mean fractional impervious area, and $a_0$ through $a_3$ are constant coefficients.
 
 === Training on 80% of Data
 
@@ -613,13 +627,13 @@ The models yielded the coefficients in @gabor-coeff-80. The linear models were t
         image("figures/gabor-transform/SuwaneeLMPrediction.png", width: 100%),
         image("figures/gabor-transform/HelenLMPrediction.png", width: 100%),
       ),
-      caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1/year Frequency, Tested on 20% of Data, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
+      caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1 year#super[-1] Frequency, Tested on 20% of Data, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
     )<gabor-predictions>],
   )
 )
 
 #place(
-  top + center,
+  bottom + center,
   scope: "parent",
   float: true,
   clearance: 1em,
@@ -633,7 +647,7 @@ The models yielded the coefficients in @gabor-coeff-80. The linear models were t
         image("figures/gabor-transform/SuwaneeLMPredictionPost2010.png", width: 100%),
         image("figures/gabor-transform/HelenLMPredictionPost2010.png", width: 100%),
       ),
-      caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1/year Frequency, Tested on 2010-2024 Data, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
+      caption: [Linear Model Predictions for Amplitude of Gabor-Transformed Stream Flow at 1 year#super[-1] Frequency, Tested on 2010-2024 Data, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
     )],
   )
 )
@@ -677,7 +691,7 @@ The models yielded the coefficients in @gabor-coeff-80. The linear models were t
 
 For each watershed, the linear model was also trained on data before 2010 and tested on data from 2010-2024, resulting in the coefficients in @gabor-coeff-2010 and performance metrics in @gabor-error-2010.
 
-The models trained on pre-2010 data had slightly worse performance in predicting their testing data, but slightly lower error in predicting the post-2010 training data, most likely due to greater variation in weather and streamflow patterns in the pre-2010 years.
+The models trained on pre-2010 data had greater error in predicting their testing data than in predicting the post-2010 training data, most likely due to greater extremes in weather and streamflow patterns in the pre-2010 years.
 
 #figure(
     caption: [Gabor Linear Model Coefficients, Trained on Pre-2010 Data],
@@ -714,7 +728,15 @@ The models trained on pre-2010 data had slightly worse performance in predicting
     ),
   ) <gabor-error-2010>
 
-All models confirm that precipitation is more strongly correlated with stream flow than temperature and fractional impervious area. However, the models have relatively low R#super[2] values and, in most cases, large mean absolute percentage error (MAPE) values between predictions and actual data. Nevertheless, the R#super[2] values are an improvement upon linear models without Gabor transforms. In addition, the large errors are generally due the model underpredicting extreme peaks and troughs in the real data. A linear model on one frequency column of a Gabor-transform would not be able to predict stream flows at other frequencies, but it does offer an interpretable model to understand amplitudes of seasonal or other periodic flows as a function of precipitation, temperature and fractional impervious area.
+=== Comparison of Results
+
+Precipitation has the highest coefficient in all models, which is consistent with the direct physical relationship between precipitation and runoff. Its coefficients are roughly equal between the two watersheds, suggesting is it equally important in predicting runoff in both watersheds.
+
+Temperature has a greater coefficient in the Chattahoochee watershed's model than in the Suwanee watershed's. This appears to be consistent with the observation that more of the variation in Chattahoochee's normalized stream flow is seasonal, as seen in @normtimeseries.
+
+Fractional impervious area plays a less significant, or perhaps an insignificant, role in the linear model for the Chattahoochee watershed. This is not surprising, since there is close to zero impervious area in the watershed.
+
+All models confirm that precipitation is more strongly correlated with stream flow than temperature and fractional impervious area, and that fractional impervious area is the least important predictor of Gabor-transformed daily runoff. However, the models have relatively low R#super[2] values and, in most cases, large mean absolute percentage error (MAPE) values between predictions and actual data. Nevertheless, the R#super[2] values of linear models on Gabor-transformed data are higher than those of linear models on raw data. In addition, the large errors are generally due the model underpredicting extreme peaks and troughs in the real data. A linear model on one frequency column of a Gabor-transform would not be able to predict stream flows at other frequencies, but it does offer an interpretable model to understand amplitudes of seasonal or other periodic flows as a function of precipitation, temperature and fractional impervious area.
 
  == Multiple Linear Regression Model with Principal Component Analysis
 
