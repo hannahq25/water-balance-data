@@ -45,18 +45,18 @@
 
 // = Background
 = Introduction <introduction>
-Accurate runoff prediction underpins a wide variety of decisions made within civil infrastructure.  Typically, industry has developed specified solutions depending upon the question being asked.  For example, when determining where to locate buildings, regulations are based on estimating a peak annual flow recurrence interval.  This approach often requires complex statistical evaluations at a regional level of stationary gage datasets.  When evaluating sizing for raw water distribution systems, understanding mean daily flow and low flow statistics is more critical.  Or if determining when to close bridges or evacuate citizens, communities often rely on predictive gages that National Oceanic and Atmospheric Administration is constantly manually updating and modifying during flood events to calibrate to observed conditions.   
+Accurate runoff prediction underpins a wide variety of decisions made within civil infrastructure.  Typically, industry has developed specified solutions depending upon the question being asked.  For example, when determining where to locate buildings, regulations are based on estimating a peak annual flow recurrence interval.  This approach often requires complex statistical evaluations at a regional level of stationary gage datasets.  When evaluating sizing for raw water distribution systems, understanding mean daily flow and low flow statistics is more critical. To determine when to close bridges or evacuate citizens, communities often rely on predictive gages that National Oceanic and Atmospheric Administration constantly calibrates during flood events to match observed conditions.
 
 These approaches often rely upon a variety of hydrologic datasets and are either manually intensive, highly subjective, or reliant on stationary datasets that are difficult to obtain in urbanizing communities or increasingly complex to simulate under changing climate conditions.   
 
-This project evaluated whether machine learning methods could be used to simplify the runoff prediction process and develop a model that can be used by civil engineers for a variety of uses.  The project evaluated the success of various machine learning approaches in two extremes: one watershed that experienced both significant urbanization as well as another watershed whose land use did not change during the time period.  Both watersheds were impacted by any change in climatic conditions during the study period.  
+This project evaluated whether machine learning methods can be used to simplify the runoff prediction process and develop a model that can be used by civil engineers for a variety of uses.  The project evaluated the success of various machine learning approaches in two extremes: one watershed that experienced both significant urbanization as well as another watershed whose land use did not change during the time period.  Both watersheds were impacted by change in climatic conditions during the study period.  
 
-Our expectation was that urbanization would have the biggest impact on our ability to predict stream flow in the selected watershed in north-metro Atlanta.  This hypothesis was based on past research, which often focuses on land cover as a primary impact in runoff.   
+Our expectation was that urbanization would have the biggest impact on our ability to predict stream flow in the selected watersheds in north-metro Atlanta, GA.  This hypothesis was based on past research, which often focuses on land cover as a primary impact in runoff.   
 
-For example, the USGS has developed peak flow regression equations at a regional level. These flows are used to develop development requirements, size bridges among a variety of other uses.   In Georgia, there are two primary current reports for estimating peak streamflow: one for urban streams @feaster2023 and another for rural streams @feaster2014.  Both reports determine an applicability boundary at an impervious area percentage of 10 (urban at an impervious percentage greater than 10% and rural if impervious area is less than 10%).   Although impervious area is a big factor in the resulting estimated peak flow, neither report specifically evaluates the impact of climate change (either temperature or precipitation) when estimating a predictive flow.  Instead, datasets are screened for nonstationarity using methods such as the Mann-Kendall approach.  Nonstationary datasets typically cannot be used when developing U.S. Geological Survey (USGS) regression equations. 
+For example, the USGS has developed peak flow regression equations at a regional level. These flows are used to formulate development requirements and size bridges, among a variety of other uses.   In Georgia, there are two primary current reports for estimating peak streamflow: one for urban streams @feaster2023 and another for rural streams @feaster2014.  Both reports determine an applicability boundary at an impervious area percentage of 10 (urban at an impervious percentage greater than 10% and rural if impervious area is less than 10%).   Although impervious area is a big factor in the resulting estimated peak flow, neither report specifically evaluates the impact of climate change (either temperature or precipitation) when estimating a predictive flow.  Instead, datasets are screened for nonstationarity using methods such as the Mann-Kendall approach.  Nonstationary datasets typically cannot be used when developing U.S. Geological Survey (USGS) regression equations. 
 
 = Data Formats and Contents
-To evaluate our hypothesis, we incorporated the following datasets.
+To evaluate our hypothesis, we explored and synthesized data from a collection of water and climate datasets.
 
 == GridMET
  The primary climate dataset used was Climatology Lab's GridMET dataset@abatzoglou2013 @GridMETwebsite. GridMET is a 4-km gridded daily time series dataset from 1979 through the present for continental U.S. (CONUS). It blends the spatial detail of Parameter-elevation Regressions on Independent Slopes Model (PRISM) climate data with the daily timing of National Land Data Assimilation System Phase 2 (NLDAS-2) reanalysis. While the focus and calibration of the dataset is on climate variables such as precipitation and temperature, Climatology Lab also stores terrain data on a similar grid and spatial domain that can be used for modeling purposes. 
@@ -151,25 +151,34 @@ The Water Data for the Nation dataset is a tabular time series, downloadable as 
 
 Each gage has a site number and metadata including location and drainage area. Data are organized by parameter code: discharge is `00060`, in cubic feet per second, and daily mean values use statistic code `00003`. Each value carries a qualification code: `A` (approved, reviewed by USGS), `P` (provisional, may be revised), or `e` (estimated). Recent data are often still provisional, so we will only incorporate approved values. 
 
-= Selecting a Study Area and Time Period <domain-selection>
-Gwinnett County, GA was chosen as the focus area due to its rapid urbanization within the past several decades. For consistency and simplicity, all gridded variables were summarized by watershed for 15 gaged watersheds within Gwinnett County as shown in @locationmap.  Stream gage data was only evaluated for 14 of the 15 watersheds because there was limited data available during the time period considered with this project.
+= Selecting Spatial and Temporal Domains <domain-selection>
+
+== Spatial Domain for Exploratory Data Analysis
+Gwinnett County, GA was chosen as a focus area due to its rapid urbanization within the past several decades. For consistency and simplicity, all gridded variables were summarized by watershed for the 15 gaged watersheds within Gwinnett County, as shown in @locationmap.  //Stream gage data was only evaluated for 14 of the 15 watersheds because there was limited data available during the time period considered with this project.
 #figure(
+  placement: auto,
   image("figures/LocationMap.png", width: 80%),
   caption: [Location of the 15 gaged watersheds evaluated in this report],
 ) <locationmap>
-Aulenbach et al. @alenbauch evaluated the overall impact of urbanization on runoff within the original 15 watershed within  Gwinnett County, although they did not evaluate the impacts of a changing climate or changing impervious over time on runoff.  The paper focused on runoff statistics such as runoff-ratio and baseflow between the different watersheds.  It confirmed percent imperviousness impacted runoff statistics within the watersheds.
+Aulenbach et al. @alenbauch evaluated the impact of urbanization on runoff within Gwinnett County's watersheds. The paper focused on runoff statistics such as runoff-ratio and baseflow between the different watersheds, confirming that percent imperviousness impacted runoff. However, the paper did not evaluate the impacts of a changing climate or changing imperviousness over time.
 
-In addition, because of the intense urbanization in all of the Gwinnett Watersheds, a sixteenth watershed was selected nearby without urbanization over the study period.  The gage, Chattahoochee River at Helen, GA (USGS Gage 02330450) was selected as a control watershed to compare the results of the Gwinnett County watersheds to a watershed that has not been impacted by urbanization.  
+== Temporal Domain
 
-Analyzing runoff and stream flow requires the precision of daily data. However, urbanization trends are best observed at annual or decadal intervals. Therefore, for each watershed and time period, the data was  summarized by the daily average, median, maximum, and minimum if available, and each statistical parameter was also estimated on an annual basis.
+Analyzing runoff and stream flow requires the precision of daily data. However, land cover data are available only at annual intervals. Therefore, for each watershed, the datasets were summarized by annual statistics (averages, medians, maximums, and minimums) and daily statistics if available.
 
-Although data span a variety of time periods, most of the data are only available between 1985 to 2024 for historical datasets.  Therefore this project will focus on this time period.  Most of the gage streamflow datasets do not begin until the mid-2000s, so the predictive modeling will focus on gages with a full record (02330450 and 02334885).
+Although the datasets span a variety of time periods, most of the data are only available between 1985 to 2024. Therefore, this project focuses on this time period. 
+
+== Spatial Domain for Predictive Modeling
+
+The watershed in Gwinnett County with the longest gage record is Suwanee Creek (USGS Gage 02334885), whose record spans the entire 1985-2024 time period. Most of the other gage datasets do not begin until the mid-2000s, so the Suwanee Creek watershed was selected as the focus Gwinnett County watershed for predictive modeling.
+
+In addition, because of the intense urbanization in Gwinnett County, another watershed with little to no urbanization, Chattahoochee River at Helen, GA (USGS Gage 02330450), was selected for the predictive modeling task. The watershed is near Gwinnett County and has gage data spanning 1985-2024. The watershed serves as a control for the impacts of urbanization.
 
 = Exploratory Data Analysis
 
 == Runoff and Streamgage
 
-The daily mean discharge data was obtained from USGS for 14 of the 15 streamgages in Gwinnett County, Georgia. The Wildcat Creek streamgage was excluded, since its recorded data (1953 – 1982) lies outside of the period scope of study (1985 -present) and the control watershed was not included. Streamgage data are the observed waterflow at the outlet of a watershed, normally given by the USGS as daily values.  
+The daily mean discharge data was obtained from USGS for 14 of the 15 streamgages in Gwinnett County, Georgia. The Wildcat Creek streamgage was excluded, since its recorded data (1953-1982) lies outside of the period scope of study (1985-2024) and the control watershed was not included. Streamgage data are the observed waterflow at the outlet of a watershed, normally given by the USGS as daily values.  
 
 The raw data file for each streamgage from USGS contains the date, corresponding mean discharge in cubic feet per second (ft3/s), and a date-value qualification value. The qualification codes include A (approved for publication), e (value has been estimated), R (records were revised), and P (provisional data subject to revision). The compiled data disregarded the provisional data and only retained the approved data. The days without a discharge value were also disregarded. Additionally, years with incomplete data, either: (a) not having a complete year (year with less than 360 days of data), (b) having no data at all, were also disregarded. 
 
