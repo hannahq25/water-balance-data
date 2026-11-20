@@ -41,6 +41,7 @@
 #show link: underline
 #show raw: set text(font: "DejaVu Sans Mono", size: 0.8em)
 #show table: set par(justify: false)
+#set math.equation(numbering: none)
 
 // = Background
 = Data Sources <data-sources>
@@ -61,7 +62,7 @@ This project explores a collection of water and climate datasets to evaluate the
  Climate projections typically utilize an ensemble of datasets, simulations, or models to improve performance and reduce uncertainty. Therefore, the MACA data will be supported by annual ensemble data from Climate Explorer, a tool built by the Environmental Protection Agency (EPA), NASA, National Oceanic and Atmospheric Administration (NOAA), and the US Geological Survey (USGS) and hosted by the National Environmental Modeling and Analysis Center (NEMAC) at the University of North Carolina Asheville. The tool provides historical climate conditions across the US based on observations at weather stations and projected climate conditions based on global climate models for the Coupled Model Intercomparison Project Phase 5 (CMIP5) under RCP 4.5 and RCP 8.5. Annual, locality-specific data can be downloaded through the online Climate Explorer tool @ClimateExplorer. 
 */
  == Soil Survey Geographic Database (SSURGO) <ssurgo-intro>
-Runoff is impacted not only by climate, but also by soil conditions. Data on soil properties across CONUS are available through the Natural Resources Conservation Service's (NRCS) Soil Survey Geographic Database (SSURGO).  While the dataset has been updated over the years, there is no time dimension to the data, unlike the other datasets discussed above.  The dataset categorizes areas spatially by soil type and provides tables detailing the properties of each soil type. The two primary variables used as part of this project are the Hydrologic Soil Group and the Available Water Storage.  Both variables express the infiltration capacity of the soil type.  Hydrologic Soil Group expresses the soil type as either A, B, C, or D, with A being the most permeable and D being the least permeable.  Available Water Storage expresses the amount of water that can be stored for use by plants up to a certain depth in the soil and stores the value in millimeters (mm), typically ranging between 0 and 250 mm.  SSURGO data are available in statewide datasets from the NRCS website @SSURGO. 
+Runoff is impacted not only by climate, but also by soil conditions. Data on soil properties across CONUS are available through the Natural Resources Conservation Service's (NRCS) Soil Survey Geographic Database (SSURGO).  While the dataset has been updated over the years, there is no time dimension to the data, unlike the other datasets discussed above.  The dataset categorizes areas spatially by soil type and provides tables detailing the properties of each soil type. The two primary variables used as part of this project are the Hydrologic Soil Group and the Available Water Storage.  Together, they capture both the rate at which water enters the ground and the total volume the soil can retain before generating runoff.  Hydrologic Soil Group expresses the soil type as either A, B, C, or D, with A being the most permeable and D being the least permeable.  Available Water Storage expresses the amount of water that can be stored for use by plants up to a certain depth in the soil and stores the value in millimeters (mm), typically ranging between 0 and 250 mm.  SSURGO data are available in statewide datasets from the NRCS website @SSURGO. 
 
 == Annual National Land Cover Database Collection 1.2  (NLCD)
  While not utilized in the Daily Water Balance, the other major variable typically used when evaluating infiltration capacity is land use.  Land use data predicts infiltration capacity by identifying: (a) impervious surfaces, where no infiltration is possible, (b) barren land, which has moderate infiltration capacity, and (c) different types of vegetative cover, which have greater capacities to intercept and absorb rainfall. The US Geological Survey (USGS) has classified land cover and surface change characteristics across CONUS by applying geospatial deep learning algorithms to the Landsat satellite imagery record @NLCDUserGuide. The resulting data are available in the Annual NLCD Collection 1.2 on an annual basis, beginning in 1985. The Land Cover Classification and Fractional Impervious Surface products in the dataset are used in this project. The data are available to view and download through multiple platforms, including the Multi-Resolution Land Characteristics (MRLC) Web Viewer @MRLCViewer.
@@ -84,7 +85,6 @@ Version 1.5 of the water balance dataset was developed from daily meteorological
 
 #figure(
   caption: [Historical Water Balance Variables],
-  placement: auto,
   table(
     columns: (auto, auto, auto, auto),
     align: (center, left, center, center),
@@ -230,7 +230,7 @@ The Water Data for the Nation dataset is a tabular time series, downloadable as 
 Each gage has a site number and metadata including location and drainage area. Data are organized by parameter code: discharge is `00060`, in cubic feet per second, and daily mean values use statistic code `00003`. Each value carries a qualification code: `A` (approved, reviewed by USGS), `P` (provisional, may be revised), or `e` (estimated). Recent data are often still provisional, so the analysis should mainly use approved values. 
 
 = Selecting a Study Area and Time Period <domain-selection>
-Gwinnett County, GA was chosen as the focus area due to its rapid urbanization within the past several decades. For consistency and simplicity, all gridded variables were summarized by watershed for 15 gaged watersheds within Gwinnett County as shown in @locationmap.  
+Gwinnett County, GA was chosen as the focus area due to its rapid urbanization within the past several decades. For consistency and simplicity, all gridded variables were summarized by watershed for 15 gaged watersheds within Gwinnett County as shown in @locationmap.  Stream gage data was only evaluated for 14 of teh 15 watershed because there was limited data avaiable during the time period considered with this project.
 #figure(
   image("figures/LocationMap.png", width: 80%),
   caption: [Location of the 15 gaged watersheds evaluated in this report],
@@ -239,7 +239,7 @@ In addition, because of the intense urbanization in all of the Gwinnett Watershe
 
 Analyzing runoff and stream flow requires the precision of daily data. However, urbanization trends are best observed at annual or decadal intervals. Therefore, for each watershed and time period, the data was  summarized by the daily average, median, maximum, and minimum if available, and each statistical parameter was also estimated on an annual basis.
 
-Although data in the datasets span the years 1950 to present, most of the data are only available between 1985 to 2024 for historical datasets.  Therefore this project will focus on this time period.  Most of the gage streamflow datasets do not begin until the mid-2000s, so the predictive modeling will focus on gages with a full record (02335000 and 02334885).
+Although data span a variety of time periods, most of the data are only available between 1985 to 2024 for historical datasets.  Therefore this project will focus on this time period.  Most of the gage streamflow datasets do not begin until the mid-2000s, so the predictive modeling will focus on gages with a full record (02330450 and 02334885).
 
 = Exploratory Data Analysis
 
@@ -254,36 +254,36 @@ The daily discharge data was converted into runoff (mm/day) by dividing it by th
 Trendlines were fitted to the annual mean discharge values to determine if there is an increasing or decreasing trend for discharge per gage. The resulting trendlines are relatively flat, with low coefficient of determination (R²) values, ranging from 0.00 to 0.12. This means that yearly variability outweighs long-term changes based on observed discharge. However, the inconsistent availability of data among gage types for some watersheds (e.g., Yellow River near Snellville with a 16-year gap and other gages having complete records only from 2002), may limit the detection of long-term trends. This can be supported by seeing that Suwanee Creek, with continuous data from 1985 to 2023, showed one of the largest increases in annual mean discharge over time. Thus, the streamgage data should be interpreted with precipitation data to determine if the discharge has changed outside of wet or dry years.
 
 #figure(
-  caption: [Annual Mean Discharge for 15 Streamgages in Gwinnett County, GA],
-  image("figures/gage_figures.png", width: 87%),
+  caption: [Annual Mean Discharge for Available Streamgages],
+  image("figures/gage_figures.png", width: 90%),
   placement: top,
   scope: "parent",
-  ) <annualdischarge>
+  )
 
-Processing the stream average daily discharge (cfs)  into an average runoff amount per square mile per day per year  (mm/year) facilitates comparison to the water balance dataset.  The  gridded water balance daily dataset was also processed into an average value per day per year per watershed.  In comparing the two datasets, it is clear the gage data has significantly more variability between the gages than the water balance dataset as shown in the figure below.  
+Processing the stream average daily discharge (cfs)  into an average runoff amount per square mile per day per year  (mm/year) facilitates comparison to the water balance dataset.  The  gridded water balance daily dataset was also processed into an average value per day per year per watershed.  In comparing the two datasets, it is clear the gage data has significantly more variability between the gages than the water balance dataset as shown in @standard-deviation.  
 
 #figure(
   caption: [Standard Deviation of Runoff across Watersheds],
   image("figures/stdev.png", width: 100%),
-)
+)<standard-deviation>
 
 The water balance dataset incorporates the spatial variability of the rainfall as well as the variability in infiltration capacity of just the underlying soils but does not incorporate land use variability or other hydrologic factors such as storage ponds within the watershed.  So it is expected that the real-world data would exhibit more variability than the modeled data.  One notable difference is higher variability in the mid 2010s in the water balance datasets. This could indicate these years is one where there was more spatial variability in the rainfall datasets across the 15 watersheds. 
 
-In addition to providing a comparison of data, it is important to have confidence that the datasets can be evaluated jointly as part of the predictive modeling.  The figure below compares the estimated annual daily runoff for gage 02207120 for both the gage data and the water balance data. 
+In addition to providing a comparison of data, it is important to have confidence that the datasets can be evaluated jointly as part of the predictive modeling.  In @annual-gage-vs-waterbalance, we compare the estimated annual daily runoff for gage 02207120 for both the gage data and the water balance data. 
 
 #figure(
   caption: [Comparison of Annual Runoff, Stream Gage versus Water Balance],
   image("figures/AnnualGagevsWaterBalance.png", width: 100%),
-)
+) <annual-gage-vs-waterbalance>
 
 From the figure it is clear they generally follow a similar underlying pattern suggesting the water balance dataset is reasonably estimating runoff.  This is a similar pattern that can be seen in the other watersheds evaluated.  
 
-In addition to annual data, the project developed daily summaries for each of the watersheds.  In the figure below, runoff is summarized for the same gage watershed.
+In addition to annual data, the project developed daily summaries for each of the watersheds.  In @daily-gage-vs-waterbalance, runoff is summarized for the same gage watershed.
 
 #figure(
   caption: [Comparison of Daily Runoff, Stream Gage versus Water Balance],
   image("figures/DailyGagevsWaterBalance.png", width: 100%),
-)
+)<daily-gage-vs-waterbalance>
 
 As expected, the gage data runoff peaks approximately a day after the water balance data does because of the travel time between the location of the rainfall and the stream gage.  However, the overall volumes do not align; in most cases, the water balance model predicts more runoff than was actually measured at the stream gage.  This could indicate the water balance dataset is poorly incorporating the full set of factors that contribute to the final runoff amount.  
 
@@ -339,7 +339,7 @@ In comparing mean fractional impervious area and minimum temperature, it is seen
 
 #figure(
   caption: [Fractional Impervious Area and Annual Minimum Temperature Comparison across the Various Datasets for Watershed "02207120"],
-  image("figures/Tmmn_vs_ImpFrac_v2.png", width: 100%),
+  image("figures/Tmmn_vs_ImpFrac.png", width: 100%),
   ) <Tmmn_vs_ImpFrac>
 
 == Infiltration Capacity <infiltration-capacity>
@@ -390,23 +390,23 @@ The US Army Corps of Engineers (USACE) provides a lookup table for CN values bas
  Overall, the watersheds have steadily trended toward higher average CNs (see @cngraph), which predict lower rates of infiltration and higher rates of runoff during rainfall events. For some watersheds, the average CN has been stable for the past one or two decades, which is consistent with lessened changes in fractional impervious area, developed land cover, and forest cover in the time frame.
   
   #figure(
-  caption: [Mean Fractional Impervious Area by Watershed],
-  image("figures/land-cover/FctImp_meanByWatershed.png", width: 90%),
+  caption: [Mean Fractional Impervious Area by Watershed in Gwinnett County, GA],
+  image("figures/land-cover/FctImp_meanByWatershed.png", height: 100%),
 ) <fctimpgraph>
 
 #figure(
   caption: [Percentage of Medium Intensity Developed Land Cover by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/DevelopedMediumIntensity_percentByWatershed.png", width: 90%),
+  image("figures/land-cover/DevelopedMediumIntensity_percentByWatershed.png", height: 100%),
 ) <medintdevgraph>
 
 #figure(
   caption: [Percentage of Deciduous Forest Land Cover by Watershed in Gwinnett County, GA],
-  image("figures/land-cover/DeciduousForest_percentByWatershed.png", width: 90%),
+  image("figures/land-cover/DeciduousForest_percentByWatershed.png", height: 100%),
 ) <decforestgraph>
 
 #figure(
-  caption: [Mean Curve Number by Watershed, GA],
-  image("figures/land-cover/CN_meanByWatershed.png", width: 90%),
+  caption: [Mean Curve Number by Watershed in Gwinnett County, GA],
+  image("figures/land-cover/CN_meanByWatershed.png", height: 100%),
 ) <cngraph>
 
 Likewise, heatmaps in @fig-fctimp reveal stark differences in fractional impervious area between 1985 and 2024, as well as the spatial distribution of urbanization.
@@ -420,33 +420,41 @@ Likewise, heatmaps in @fig-fctimp reveal stark differences in fractional impervi
   ),
   caption: [Fractional Impervious Area in Gwinnett County, GA in 1985 vs 2024],
 ) <fig-fctimp>
+/*
+#figure(
+  image("figures/land-cover/FctImp1985.png", width: 100%),
+)
 
- In addition to land use and impervious area, the other factor which determines infiltration capacity for an area is the soil type. The SSURGO data are the only input in determining the maximum potential storage of rainwater within the water balance dataset. It is derived from the available water storage variable (AWS) variable within the SSURGO dataset and estimates the amount of water that can be stored within the soil that is available to plants. While the maximum AWS used for the water balance dataset is not provided, in general it is possible to estimate the value used by taking the maximum value over time for each grid cell.  By visual comparison on a sample watershed for USGS gage 02207120, the datasets do generally align as shown below.  However it should be noted that differences will exist because reprojection methods when developing the water- balance datasets are not publicly available.  In general, it appears the maximum soilwater value is higher than the value this project estimated from the SSURGO data, indicating that the maximum soilwater would be an appropriate way to estimate the maximum soil bucket input value if needed to recreate the water balance process. 
+#figure(
+  caption: [Fractional Impervious Area in Gwinnett County, GA in 1985 vs 2024],
+  image("figures/land-cover/FctImp2024.png", width: 100%),
+)
+*/
+ In addition to land use and impervious area, the other factor which determines infiltration capacity for an area is the soil type. The SSURGO data are the only input in determining the maximum potential storage of rainwater within the water balance dataset. It is derived from the available water storage variable (AWS) variable within the SSURGO dataset and estimates the amount of water that can be stored within the soil that is available to plants. While the maximum AWS used for the water balance dataset is not provided, in general it is possible to estimate the value used by taking the maximum value over time for each grid cell.  By visual comparison on a sample watershed for USGS gage 02207120, the datasets do generally align as shown in @soilwater-comparison.  In general, it appears the maximum soilwater value is higher than the value this project estimated from the SSURGO data.  Therefore we maximized the soilwater data instead of attempting to use the SSURGO data directly.  The differences betweent eh two results is likely due do complications and assumptions made when converting the data between projections and cell sizes. 
 
 #figure(
   caption: [SSURGO Available Water Storage (left), Daily Water Balance Maximum Soilwater (right)],
   image("figures/SSURGOvsSoilwater.png", width: 100%),
-) 
+) <soilwater-comparison>
 The Curve Number (CN) was used to quantify the increase in urbanization in Gwinnett County. The average CN per year per watershed (site location) was used to represent urbanization and was plotted against time with the average mean discharge for each watershed. While the CN is seen to increase over time, the average mean discharge is seen to be controlled by the wet and dry periods, indicated by the lack of visually increasing or decreasing trends over time.
 
  = Predictive Modeling 
  == Multiple Linear Regression with the Water Balance Spatial Dataset
- 
- The water balance model is a physically based model that transforms the precipitation by first dividing it into rainfall and snowfall.  The runoff is then estimated as the available water that cannot be infiltrated or evapotranspirated as shown in the below figure.
+ The water balance model is a physically based model that transforms the precipitation by first dividing it into rainfall and snowfall.  The runoff is then estimated as the available water that cannot be infiltrated or evapotranspirated as shown in <fig-waterbalance>.
 
  #figure(
   caption: [Schematic of Water Balance Model Variables],
   image("figures/WaterBalanceProcess.png", width: 100%),
 )<fig-waterbalance>
-The infiltration/evapotranspiration is often simplified in hydrologic modeling by assuming a constant loss rate based on the type of soils.  The rates typically range between 0 and 0.45 in/hr or approximately 0 to 274 mm/day.  For the watersheds in this study, based on the Hydrologic Soil Group of the soils, the typical range to expect would be 30 to 180 mm/day.  
+The infiltration/evapotranspiration is often simplified in hydrologic modeling by assuming a constant loss rate based on the type of soils.  The rates typically range between 0 and 0.45 in/hr or approximately 0 to 274 mm/day.  For the watersheds in this study, based on the Hydrologic Soil Group of the soils, the typical range to expect would be 30 to 180 mm/day during a rainfall event.  
 
-In the water balance model, the maximum evapotranspiration in a day for any of the watersheds evaluated was approximately 6 mm/day and the maximum infiltration was 80 mm per day.  The mean infiltration on days with rain was approximately 3 mm/day, indicating that the water balance model is typically underestimating the infiltration capacity of the watersheds.   
+Instead, in the water balance model, the maximum evapotranspiration in a day for any of the watersheds evaluated was approximately 6 mm/day and the maximum infiltration was 80 mm per day.  The mean infiltration on days with rain was approximately 3 mm/day, indicating that the water balance model typically underestimates soil storage and infiltration capacity compared with more typical hydrologic modeling approaches.   
 
 Therefore, this project incorporated a combination of the water balance estimate of runoff with extra spatial weights to represent the extra infiltration and with a linear intercept which could be used to represent base flow.   
 
 Another complication with using the water balance results to estimate streamflow at a gage is the travel time from the location within the watershed where the runoff occurs to the gaged location.  In traditional watershed modeling, this is modeled using a time of concentration or lag time to reflect the travel time for rainfall from the farthest part of the watershed to the downstream most point in the watershed and the rainfall hyetograph is translated by the time length. In this model, the travel time was reflected by estimating the gage discharge at time t by the runoff estimated by the modified water balance model at time t, t-1, t-2, etc. reflecting the overall translation of the spatially gridded runoff to the final gaged streamflow point.   
 
-These additional variables and weights are documented in the updated figure below. 
+These additional variables and weights are documented in <fig-waterbalancemodified>. 
 
 #figure(
   caption: [Schematic of Water Balance Model Variables Used to Develop Gaged Runoff Estimate],
@@ -454,15 +462,12 @@ These additional variables and weights are documented in the updated figure belo
 )<fig-waterbalancemodified>
 
 
-Within the model, weights were estimated for each 1 square kilometer grid cell.  For example, the Suwanee Creek gage (USGS Gage No 02334885) covers 112 cells.  Therefore, in the linear regression model  there are 112 weights, one for each grid cell at time t.  In the model that incorporates both time t and t-1, there are twice as many weights, 224.  As part of the process, the project evaluated three different methods to estimate the weights on each grid cell using the Machine Learning in Julia (MLJ) and MLJLinearModels packages. 
-
-Linear Regressor.  The linear regressor applies the standard linear regression function by minimizing the difference between a weighted X matrix and Y. 
-Ridge Regressor.  The ridge regressor applies a penalty term, $lambda$, to the square of the weights.  While we should expect a higher overall error when applying ridge regression because it adds an extra term to the error equation, it should result in more consistent and lower weights across the spatial domain.  While it will introduce more error, these weights are more likely to be the more physically realistic option.  
-Lasso Regressor.  The lasso regressor similarly applies a penalty term but multiplies it singularly by the absolute value of the weight instead of the square of the weights. Lasso regression should result in more zeroed weights.  While in many cases this may not be physically representative of the watershed (that a location has zero impact on the overall downstream discharge), it could represent locations where there is a local reservoir that controls or regulates the flow so it does not impact the final gaged discharge.    
-Similar to the other methods evaluated, the project looked at these approaches with two gages, Suwanee Creek at Suwanee (02334885) and the Chattahoochee River at Helen (02330450).  This will allow evaluation of both an urbanizing watershed and one with a very low level of development.  A summary of the R-Squared of the various scenarios with different time ranges, model, and lambdas is included in the tables below.   In these models the models were trained and tested across the full datasets.  Because in this case we trained over the full time period, there was no noticeable degradation of model results due to urbanization.  
+Within the model, weights were estimated for each 1 square kilometer grid cell.  For example, the Suwanee Creek gage (USGS Gage No 02334885) covers 112 cells.  Therefore, in the linear regression model  there are 112 weights, one for each grid cell at time t.  In the model that incorporates both time t and t-1, there are twice as many weights, 224.  As part of the process, the project evaluated three different methods to estimate the weights on each grid cell using the Machine Learning in Julia (MLJ) and MLJLinearModels packages: linear regressor, ridge regressor, and lasso regressor.
+ 
+Similar to the other methods evaluated, the project looked at these approaches with two gages, Suwanee Creek at Suwanee (02334885) and the Chattahoochee River at Helen (02330450).  This will allow evaluation of both an urbanizing watershed and one with a very low level of development.  A summary of the R-Squared of the various scenarios with different time ranges, model, and lambdas is included in the tables below.   In these models the models were trained and tested across the full datasets.  Because in this case we trained over the full time period, there was no noticeable degradation of model results due to urbanization and the psat non-stationarity of the urbanizing watershed would not impact the ability of the approach to predict runoff in upcoming years.
 
 #figure(
-    caption: [Suwanee Creek at Suwanee (02334885) R-Squared for Various Model Scenarios],
+    caption: [Suwanee Creek at Suwanee (02334885) R-Squared for Various Model Scenarios Including Time t through t-5],
     table(
   columns: 7,
   inset: 6pt,
@@ -515,7 +520,7 @@ The weights were also evaluated spatially.  Below are some sample plots of the b
 
 As shown in the above figures, stronger weights are in the southwest of the watershed, which is where the gage is located.  This logically makes sense as this location would have a more direct impact on the flow at the gage.  In addition, the higher weights occur on the spatially estimated runoff at day t-1, confirming the expected behavior that there is a delay between the rainfall and the runoff expected at the gage.  The other item of note from these figures is the known issue with a linear regressor in a spatial context: it produces strong swings between cells physically next to each other due to overfitting to the training data.   
 
-The differences between the modeling results on specific rainfall events can also be evaluated by looking at the final runoff estimate over time between the various models, as shown in the figure below developed from predictions of a rainfall occurring during September 2009.   
+The differences between the modeling results on specific rainfall events can also be evaluated by looking at the final runoff estimate over time between the various models, as shown in <fig-samplehydrographs> developed from predictions of a rainfall occurring during September 2009.   
 
 #figure(
   caption: [Example of Sample Hydrographs for Suwanee Creek at Suwanee (02334885) for Linear Regressor with Time t through t-5
@@ -739,207 +744,6 @@ Fractional impervious area plays a less significant, or perhaps an insignificant
 All models confirm that precipitation is more strongly correlated with stream flow than temperature and fractional impervious area, and that fractional impervious area is the least important predictor of Gabor-transformed daily runoff. However, the models have relatively low R#super[2] values and, in most cases, large mean absolute percentage error (MAPE) values between predictions and actual data. Nevertheless, the R#super[2] values of linear models on Gabor-transformed data are higher than those of linear models on raw data. In addition, the large errors are generally due the model underpredicting extreme peaks and troughs in the real data. A linear model on one frequency column of a Gabor-transform would not be able to predict stream flows at other frequencies, but it does offer an interpretable model to understand amplitudes of seasonal or other periodic flows as a function of precipitation, temperature and fractional impervious area.
 
  == Multiple Linear Regression Model with Principal Component Analysis
-
-The model was developed for the Suwanee Creek at Suwanee gage (USGS Gage No. 02334885). The dependent variable is daily runoff depth in millimeters (mm), calculated from daily mean discharge and the watershed drainage area. The record extends from January 3, 1985, to June 10, 2024, and contains 14,404 consecutive days with no missing values. 
-
-For this model, four independent variables were used: (1) one-day precipitation, (2) two-day precipitation, (3) three-day precipitation, and (4) fractional impervious area. One-day precipitation represents watershed-average daily precipitation and was taken from the gridded water balance dataset. The two- and three-day precipitation show the sum of the current day's precipitation and the precipitation from one or two days prior. Meanwhile, the fractional impervious area is the mean fractional impervious area, taken from the land cover dataset.
-
-A principal component analysis (PCA) was applied to transform the independent variables into uncorrelated components before fitting the regression. Every fourth year of the record (1988, 1992, and so on through 2024) was withheld for testing, and the model was trained on the remaining years. This resulted in 10,948 days of training data and 3,456 days of testing data. Withholding every third and fifth year of record was also tested to determine if this sampling methodology is sensitive to the interval chosen. However, this did not significantly improve the regression results, so the middle value was chosen. 
-
-Whole years were withheld instead of random days, since streamflow has a more gradual daily change than a random fluctuation. Streamflow is highly dependent on precipitation and on the rate of drainage through the drainage network within the watershed, which causes flow from a single storm event to extend over several days. Randomly selecting a day may place data from the same storm event in both training and testing data and may cause the model to overperform. Each variable was then normalized to a mean of zero and a standard deviation of one using the normalization function from the lecture. 
-
-The PCA was performed by applying a singular value decomposition to the normalized training data. The loadings of the resulting principal components, which indicate the contribution of each independent variable to each component, are summarized in the table below.
-
-#figure(
-  placement: auto,
-  table(
-    columns: (2fr, 1fr, 1fr, 1fr),
-    align: (left, center, center, center),
-    table.header([*Variable*], [*PC1*], [*PC2*], [*PC3*]),
-    [One-day precipitation], [−0.55], [0.02], [−0.78],
-    [Two-day precipitation], [−0.61], [0.02], [0.13],
-    [Three-day precipitation], [−0.57], [0.01], [0.61],
-    [Fractional impervious area], [−0.03], [−1.00], [−0.01],
-  ),
-  caption: [Principal component loadings for the Suwanee Creek watershed],
-) <pca-loadings>
-
-The loadings show how much each variable contributes to a component, where a value closer to 1 (or -1) indicates a large contribution and a value closer to 0 indicates a small contribution. The first principal component is weighted almost equally on the three precipitation variables and represents the overall amount of recent rainfall. The second component consists almost entirely of the fractional impervious area. The third component contrasts the one-day precipitation with the three-day precipitation and therefore represents the timing of the rainfall, that is, whether the rain fell on the same day or on the preceding days. Each component is a direction through the data, so its sign only indicates which way that direction points and is assigned arbitrarily by the PCA; therefore, this does not affect the results. 
-
-Two models were then fitted to the training data by least squares for comparison. The first uses the four normalized independent variables directly, and the second uses the three retained principal components:
-
-#v(0.6em)
-#align(center)[
-  #set par(justify: false)
-  #set text(hyphenate: false)
-  Runoff = β#sub[1] (One-day precipitation) + β#sub[2] (Two-day precipitation) + β#sub[3] (Three-day precipitation) + β#sub[4] (Fractional impervious area)
-]
-#v(0.6em)
-#align(center)[
-  Runoff = β#sub[1] (PC1) + β#sub[2] (PC2) + β#sub[3] (PC3)
-]
-#v(0.6em)
-
-The coefficient of determination for each model, calculated for both the training and testing data, is summarized in the table below.
-
-#figure(
-  placement: auto,
-  table(
-    columns: (2fr, 1fr, 1fr),
-    align: (left, center, center),
-    table.header([*Model*], [*Daily $R^2$ (train)*], [*Daily $R^2$ (test)*]),
-    [All four variables], [0.56], [0.59],
-    [PCA, three components], [0.52], [0.53],
-  ),
-  caption: [Coefficients of determination for the Suwanee Creek regression models],
-) <pca-r2>
-
-#figure(
-  image("figures/suwanee_regression_daily_all.png", width: 100%),
-  caption: [Predicted vs. Observed Daily Runoff for Suwanee Creek using All Four Variables],
-) <pca-daily-all>
-
-#figure(
-  image("figures/suwanee_regression_daily_pca.png", width: 100%),
-  caption: [Predicted vs. Observed Daily Runoff for Suwanee Creek using Three Principal Components],
-) <pca-daily-pca>
-
-The $R^2$ values from the two models range from 0.52 to 0.59 for daily runoff. The values for the testing data are similar to those for the training data, which indicates that the models are not overfitted to the training years. This is consistent with the water balance regression described above, in which including the previous day produced the largest improvement in the model. In the PCA regression, the timing component (PC3) has the largest coefficient (0.58), followed by the rainfall amount component (PC1, −0.40), which confirms that the delay between rainfall and streamflow is the most important feature captured by the aggregated precipitation variables. 
-
-The PCA regression has a slightly lower $R^2$ for daily runoff than the regression on all four variables (0.53 compared to 0.59 for the testing data), since it uses one fewer input variable. 
-
-The figure below compares observed and predicted daily runoff for the September 2009 storm, which is the same storm shown in the water balance regression section. This period falls within the training years, so the models are expected to perform well in predicting the data. The two models closely follow the smaller rises in runoff before and after the main storm. However, the observed runoff peaked at approximately 66 mm on September 21, whereas the predicted peaks were approximately 24 mm for the regression on all four variables and 21 mm for the PCA regression, and both occurred one day later.
-
-#figure(
-  image("figures/suwanee_pca_sept2009.png", width: 100%),
-  caption: [Observed and predicted daily runoff for Suwanee Creek during September 2009],
-) <pca-sept2009>
-
-Two limitations can be identified: (1) days with low runoff tend to be overpredicted for both models, and (2) days with the highest runoff are underpredicted, as shown by the points falling below the line at high observed runoff, by the points falling above the line at low observed runoff, and by the comparison for the September 2009 storm. Additionally, the coefficient of the fractional impervious area component (PC2) is close to zero (−0.03), which indicates that the linear model does not detect an effect of urbanization on daily runoff at Suwanee Creek, even though the fractional impervious area increased substantially over the period of record. A linear model can only add a fixed amount of runoff for a given level of imperviousness, whereas imperviousness is expected to increase the runoff produced by each unit of rainfall.
-
-==  Decision Tree with Feature Selection and Cross Validation
-
-Two basins were considered for this evaluation: Suwanee Creek (USGS 02334885) and the Chattahoochee River at Helen (USGS 02330450) in the state of Georgia. They are similar in size but differ in land cover and rainfall (@basin-char). Suwanee Creek basin urbanized rapidly from 1985 to 2023, with impervious cover rising from 5.6% to 30%. The Chattahoochee River at Helen basin stayed largely forested, with impervious cover below 1% throughout. Helen is also much wetter, receiving about 1,880 mm of rain a year compared to 1,360 mm/year at Suwanee. The annual rainfall in both basins (calculated as the average of pr_mean (mm/day) over all grid cells in each basin and aggregated annually) move closely together (correlation 0.88), as seen in @1dt_annual_rainfall_correlation.
-
-#figure(
-  table(
-    columns: (2fr, 1fr, 1.5fr),
-    align: (left, center, center),
-    table.header([*Basin Characteristic*], [*Suwanee Creek*], [*Chattahoochee at Helen*]),
-    [Drainage area (sq.mi.)], [47.1], [44.7],
-    [Impervious cover % (1985-2023)], [5.6 to 30], [$<1$],
-    [Annual mean rainfall (mm)], [1,360], [1,880],
-  ),
-  caption: [Selected Basin Characteristics],
-) <basin-char>
-
-#figure(
-  image("figures/Figure1dt_annual_rainfall_correlation.png", width: 100%),
-  caption: [Annual Rainfall of Suwanee and Chatthoochee River at Helen Basins (1985-2023)],
-) <1dt_annual_rainfall_correlation>
-
-=== Feature Selection 
-
-Initial features explored for analysis included daily GridMET climate variables averaged over each basin:  
-
-• precipitation ('pr_mean', 'pr_max', 'pr_min', 'pr_median')
-
-• minimum and maximum temperature ('tmmn_mean', 'tmmx_mean') 
-
-• solar radiation ('srad_mean') 
-
-• vapor pressure deficit ('vpd_mean') 
-
-• rainfall totals over the previous 2, 7 and 30 days ('rain_2day', 'rain_7day', 'rain_30day') 
-
-• flags for more than 1 inch (25.4 mm) of rain on the day or over 2 days ('heavy_rain_daily', 'heavy_rain_2day') 
-
-• the day of the year ('day_of_year') 
-
-• annual fraction impervious ('impervious_pct')
-
-
-Many of these features overlap, so Spearman correlations were plotted (@1dt_spearman_correlation) to remove the features most similar to each other.  
-
-#figure(
-  image("figures/Figure2dt_feature_correlation.png", width: 90%),
-  caption: [Spearman Correlations between Initial Features for Feature Selection],
-  placement: auto,
-  scope: "parent",
-) <1dt_spearman_correlation>
-
-On reviewing the feature correlations, only nine features were selected for further analysis including pr_mean, rain_2day, rain_7day, rain_30day, tmmx_mean, srad_mean, vpd_mean, day_of_year and impervious_pct. Only pr_mean was kept due to high correlations with similar variables. A similar logic was used to keep only tmmx_mean. Features including flags for heavy rain were dropped because the decision tree will find its own cut points. 
-
-=== Model Development
-
-The DecisionTree Julia package was used to develop a decision tree for each basin. The data were separated into training (80%) and testing (20%) sets using a seeded random sample (seed 42) per basin.  
-
-A separate decision tree was developed for each basin using the remaining features, with the target of predicting high-discharge events. Discharge (cfs) is calculated using gage depth (mm/day) and basin area (sq mm). High-discharge events are defined as days when discharge exceeds the 90th percentile of the training data. These thresholds were calculated independently for each watershed (129 cfs at Suwanee and 244 cfs at Helen) because rainfall and flow differ greatly between the two basins.  
-
-A decision tree repeatedly splits the days into two groups using a yes/no question about one feature. Each split is chosen to make the groups as pure as possible, measured by the Gini index (Gini = 1 − Σ pₖ²). A Gini index of 0 means all days in the group are the same kind. Figure @3dt shows an example for ‘rain_2day’. At Suwanee, splitting at about ‘rain2day’ = 24 mm brings the weighted Gini index to about 0.12. At Chatthoochee at Helen, the best ‘rain_2day’ split brings its index to about 0.15.
-
-The number of levels in the tree was decided based on the 5-fold cross-validated F1 score (described under Model Performance) for depths of 1 to 10 (@3dt). Suwanee scores almost as well with a single split (F1 = 0.62) as at its best depth (F1 = 0.63 at four levels), while Helen improves steadily up to about six levels. Four levels were chosen as a balance between the two basins.
-
-The decision trees for Suwanee basin and Chattahoochee by Helen basin are shown in @4dt and @5dt respectively. The predictions for both basins depend mostly on the rain variables. ‘impervious_pct’ shows not to negligible predictive importance for both watersheds, as well as ‘tmmx_mean’, ‘srad_mean’, ‘vpd_mean’ and ‘pr_mean’. This is because land use change is available only on an annual basis, so daily changes in runoff cannot be explained. Additional examination of the impact of landuse may include reviewing yearly runoff ratio (annual runoff depth divided by annual rainfall), analyzing stream flashiness, or looking at other basins.
-
-#figure(
-  placement: top,
-  image("figures/Figure3dt_gini_split_and_tree_depth.png", width: 100%),
-  caption: [(a) Weighted Gini Example and (b) Cross-Validated F1 by Maximum Tree Depth],
-  scope: "parent",
-) <3dt>
-
-#figure(
-  placement: auto,
-  image("figures/Figure4dt_decision_tree_suwanee.png", width: 95%),
-  caption: [Decision tree for Suwanee basin],
-  scope: "parent"
-) <4dt>
-
-#figure(
-  placement: auto,
-  image("figures/Figure5dt_decision_tree_helen.png", width: 95%),
-  caption: [Decision tree for Chattahoochee by Helen basin],
-  scope: "parent"
-) <5dt>
-
-=== Model Performance
-
-To evaluate how well the decision trees predict, four metrics were used: 
-
-• Accuracy, which is the share of all test days predicted correctly. Because only 10% of days are high flow, always predicting "normal" already scores about 90% (the baseline), so accuracy isn’t the best metric to assess performance in this case. 
-
-• Precision, which is ratio of true high flow days to the days predicted as high flow. Low precision indicates a lot of false negatives. 
-
-• Recall, which is ratio of true high flow days to the days that are actually high flow. Low recall indicates a lot of missed events. 
-
-• F1, which is a single score that balances precision and recall (calculated by their harmonic mean); it is high only when both are high. For this study, the F1 score is likely a better performance indicator than accuracy due to the relative rarity of high flow events. 
-
-The performance metrics are listed below.
- 
-#figure(
-  placement: auto,
-  table(
-    columns: (2fr, 1fr, 1fr, 1fr, 1fr),
-    align: (left, center, center, center, center),
-    table.header([*Basin*], [*Accuracy*], [*Precision*], [*Recall*], [*F1*]),
-    [Suwanee Creek], [92.8%], [71%], [57%], [0.63],
-    [Chattahoochee at Helen], [92.9%], [66%], [47%], [0.55],
-  ),
-  caption: [Decision Tree Performance on Test Set],
-  scope: "parent"
-) <basin-characteristics>
-
-The decision tree models do only moderately better than guessing. They give relatively few false alarms (71% and 66% precisions) but miss a large number of high flow days (57% and 47% recall), especially at Chattahoochee at Helen. The decision tree model does somewhat better on the Suwanee basin than on the Chattahoochee at Helen basin (0.63 vs 0.55 F1s). 
-
-== Comparison of Modeling Approaches
-Comparing the models, similar findings were found for the following: rainfall timing and time lag, effect of urbanization at the daily scale, and high-flow prediction.
-
-The timing of the rainfall is found to be the most important predictor of streamflow. The water balance regression improved the most when the previous day was included; the Gabor transform regression used a two-day precipitation total to account for the one-day lag; the timing component had the largest coefficient in the PCA regression; and the decision trees depended mostly on the rainfall variables. Additionally, considering the runoff from the previous day(s) produced large improvements in the predictions. This is consistent with the observation that the runoff occurs approximately one day after the precipitation due to the time needed for the rainfall to reach the streamgages. 
-
-The effect of urbanization on a daily scale is difficult to detect since land cover data change annually, while runoff data change daily. The coefficient of the fractional impervious area component in the PCA regression was close to zero, and the annual impervious cover data cannot explain daily runoff in the decision trees. However, the Gabor transform regression produced a small positive coefficient for fractional impervious area, due to the effect of impervious surfaces increasing runoff. 
-
-Lastly, high flows are difficult to predict and are largely underpredicted. The water balance and PCA regressions underpredicted the highest runoff days, including the September 2009 storm, and the decision trees missed a large number of high-flow days. In contrast, the model that predicts the smoothed seasonal signal had the highest coefficient of determination, which indicates that the models perform better as the predicted quantity becomes less variable.
 
 /*This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
 Multivariate regression will also be used to analyze the strength and confidence of correlations between the climate and the urbanization metrics as independent variables and runoff or stream flow as the dependent variable. The regression optimization model will assume linear relationships for all variables except where theory, industry standards, or analysis results establish a clear nonlinear relationship, such as the relationship between CN and runoff in the SCS equation.
