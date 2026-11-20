@@ -454,7 +454,7 @@ Therefore, this project incorporated a combination of the water balance estimate
 
 Another complication with using the water balance results to estimate streamflow at a gage is the travel time from the location within the watershed where the runoff occurs to the gaged location.  In traditional watershed modeling, this is modeled using a time of concentration or lag time to reflect the travel time for rainfall from the farthest part of the watershed to the downstream most point in the watershed and the rainfall hyetograph is translated by the time length. In this model, the travel time was reflected by estimating the gage discharge at time t by the runoff estimated by the modified water balance model at time t, t-1, t-2, etc. reflecting the overall translation of the spatially gridded runoff to the final gaged streamflow point.   
 
-These additional variables and weights are documented in <fig-waterbalancemodified>. 
+These additional variables and weights are documented in @fig-waterbalancemodified. 
 
 #figure(
   caption: [Schematic of Water Balance Model Variables Used to Develop Gaged Runoff Estimate],
@@ -523,7 +523,7 @@ The weights were also evaluated spatially.  @fig-betasuwaneecreekd are some samp
 
 Stronger weights are in the southwest which is where the gage is located.  This logically makes sense as this location would have a more direct impact on the flow at the gage.  In addition, the higher weights occur on the spatially estimated runoff at day t=0 and t-1, confirming the expected behavior that there is a delay between the rainfall and the runoff expected at the gage.  Compared with the linear regression results, the ridge regression generally produced lower weights and fewer adjacent extremes especially at the higher lamba values.  The ridge regression penalty term, lambda, penalizes large coefficients and would be expected to produce a more generalized result.  
 
-The differences between the modeling results on specific rainfall events can also be evaluated by looking at the final runoff estimate over time between the various models, as shown in <fig-samplehydrographs> developed from predictions of a rainfall occurring during September 2009.   
+The differences between the modeling results on specific rainfall events can also be evaluated by looking at the final runoff estimate over time between the various models, as shown in @fig-samplehydrographs developed from predictions of a rainfall occurring during September 2009.   
 
 #figure(
   caption: [Example of Sample Hydrographs for Suwanee Creek at Suwanee (02334885) for Linear Regressor with Time t through t-5
