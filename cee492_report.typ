@@ -62,7 +62,7 @@ To evaluate our hypothesis, we explored and synthesized data from a collection o
  The primary climate dataset used was Climatology Lab's GridMET dataset@abatzoglou2013 @GridMETwebsite. GridMET is a 4-km gridded daily time series dataset from 1979 through the present for continental U.S. (CONUS). It blends the spatial detail of Parameter-elevation Regressions on Independent Slopes Model (PRISM) climate data with the daily timing of National Land Data Assimilation System Phase 2 (NLDAS-2) reanalysis. While the focus and calibration of the dataset is on climate variables such as precipitation and temperature, Climatology Lab also stores terrain data on a similar grid and spatial domain that can be used for modeling purposes. 
 The GridMET data are available as Network Common Data Form (NetCDF) files, usually one file per variable per year, on a regular latitude–longitude grid in geographic coordinate system World Geodetic System 1984 (WGS84). The GridMET dataset spans the years 1979 to the present.
 
-The dataset includes precipitation, daily maximum and minimum temperature, which are the primary climate variables for the project. Other variables, that may be used as part of the project, included in the dataset such as srad, vpd and pdsi. The table below lists the variables used in this project.
+The dataset includes precipitation, daily maximum and minimum temperature, which are the primary climate variables for the project. Other variables, that may be used as part of the project, included in the dataset such as srad and vpd. The table below lists the variables used in this project.
 
 #figure(
   caption: [GridMET Variables],
@@ -75,7 +75,6 @@ The dataset includes precipitation, daily maximum and minimum temperature, which
   [`tmmn`],[daily minimum air temperature],[K],
   [`srad`],[Downward surface shortwave solar radiation],[W/m²],
   [`vpd`],[mean vapor pressure deficit],[kPa],
-  [`pdsi`],[Palmer Drought Severity Index (ten-day severity indicator)],[none],
   )
 )
 == Daily Historical Water Balance Dataset (Daily Water Balance)
@@ -369,8 +368,8 @@ Likewise, heatmaps in @fig-fctimp reveal stark differences in fractional impervi
   caption: [SSURGO Available Water Storage (left), Daily Water Balance Maximum Soilwater (right)],
   image("figures/SSURGOvsSoilwater.png", width: 100%),
 ) <soilwater-comparison>
-The Curve Number (CN) was used to quantify the increase in urbanization in Gwinnett County. The average CN per year per watershed (site location) was used to represent urbanization and was plotted against time with the average mean discharge for each watershed. While the CN is seen to increase over time, the average mean discharge is seen to be controlled by the wet and dry periods, indicated by the lack of visually increasing or decreasing trends over time.
-
+/*The Curve Number (CN) was used to quantify the increase in urbanization in Gwinnett County. The average CN per year per watershed (site location) was used to represent urbanization and was plotted against time with the average mean discharge for each watershed. While the CN is seen to increase over time, the average mean discharge is seen to be controlled by the wet and dry periods, indicated by the lack of visually increasing or decreasing trends over time.
+*/
  = Predictive Modeling 
  == Multiple Linear Regression with the Water Balance Spatial Dataset
  The water balance model is a physically based model that transforms the precipitation by first dividing it into rainfall and snowfall.  The runoff is then estimated as the available water that cannot be infiltrated or evapotranspirated as shown in @fig-waterbalance.
@@ -787,7 +786,7 @@ Two basins were considered for this evaluation: Suwanee Creek (USGS 02334885) an
     table.header([*Basin Characteristic*], [*Suwanee Creek*], [*Chattahoochee at Helen*]),
     [Drainage area (sq.mi.)], [47.1], [44.7],
     [Impervious cover % (1985-2023)], [5.6 to 30], [$<1$],
-    [Annual mean rainfall (mm)], [1,360], [1,880],
+    [Annual mean rainfall (mm/year)], [1,360], [1,880],
   ),
   caption: [Selected Basin Characteristics],
 ) <basin-char>
@@ -815,7 +814,7 @@ Initial features explored for analysis included daily GridMET climate variables 
 
 • the day of the year ('day_of_year') 
 
-• annual fraction impervious ('impervious_pct')
+• annual fractional impervious cover percentage ('impervious_pct')
 
 
 Many of these features overlap, so Spearman correlations were plotted (@1dt_spearman_correlation) to remove the features most similar to each other.  
@@ -827,15 +826,15 @@ Many of these features overlap, so Spearman correlations were plotted (@1dt_spea
   scope: "parent",
 ) <1dt_spearman_correlation>
 
-On reviewing the feature correlations, only nine features were selected for further analysis including pr_mean, rain_2day, rain_7day, rain_30day, tmmx_mean, srad_mean, vpd_mean, day_of_year and impervious_pct. Only pr_mean was kept due to high correlations with similar variables. A similar logic was used to keep only tmmx_mean. Features including flags for heavy rain were dropped because the decision tree will find its own cut points. 
+On reviewing the feature correlations, only nine features were selected for further analysis including pr_mean, rain_2day, rain_7day, rain_30day, tmmx_mean, srad_mean, vpd_mean, day_of_year and impervious_pct. Only pr_mean was kept due to high correlations (>= 0.95) with similar variables. A similar logic was used to keep only tmmx_mean. Features including flags for heavy rain were dropped because the decision tree will find its own cut points. 
 
 === Model Development
 
 The DecisionTree Julia package was used to develop a decision tree for each basin. The data were separated into training (80%) and testing (20%) sets using a seeded random sample (seed 42) per basin.  
 
-A separate decision tree was developed for each basin using the remaining features, with the target of predicting high-discharge events. Discharge (cfs) is calculated using gage depth (mm/day) and basin area (sq mm). High-discharge events are defined as days when discharge exceeds the 90th percentile of the training data. These thresholds were calculated independently for each watershed (129 cfs at Suwanee and 244 cfs at Helen) because rainfall and flow differ greatly between the two basins.  
+A separate decision tree was developed for each basin using the remaining features, with the target of predicting high-discharge or high flow events. High-discharge events are defined as days when discharge exceeds the 90th percentile of the training data. These thresholds were calculated independently for each watershed (129 cfs at Suwanee and 244 cfs at Chattahoochee at Helen) because rainfall and flow differ greatly between the two basins.  
 
-A decision tree repeatedly splits the days into two groups using a yes/no question about one feature. Each split is chosen to make the groups as pure as possible, measured by the Gini index (Gini = 1 − Σ pₖ²). A Gini index of 0 means all days in the group are the same kind. Figure @3dt shows an example for ‘rain_2day’. At Suwanee, splitting at about ‘rain2day’ = 24 mm brings the weighted Gini index to about 0.12. At Chattahoochee at Helen, the best ‘rain_2day’ split brings its index to about 0.15.
+A decision tree repeatedly splits the days into two groups using a yes/no question about one feature. Each split is chosen to make the groups as pure as possible, measured by the Gini index (Gini = 1 − Σ pₖ²). A Gini index of 0 means all days in the group are the same kind. @3dt shows an example for ‘rain_2day’. At Suwanee, splitting at about ‘rain2day’ = 24 mm brings the weighted Gini index to about 0.12. At Chattahoochee at Helen, the best ‘rain_2day’ split brings its index to about 0.15.
 
 The number of levels in the tree was decided based on the 5-fold cross-validated F1 score (described under Model Performance) for depths of 1 to 10 (@3dt). Suwanee scores almost as well with a single split (F1 = 0.62) as at its best depth (F1 = 0.63 at four levels), while Helen improves steadily up to about six levels. Four levels were chosen as a balance between the two basins.
 
@@ -868,13 +867,13 @@ To evaluate how well the decision trees predict, four metrics were used:
 
 • Accuracy, which is the share of all test days predicted correctly. Because only 10% of days are high flow, always predicting "normal" already scores about 90% (the baseline), so accuracy isn’t the best metric to assess performance in this case. 
 
-• Precision, which is ratio of true high flow days to the days predicted as high flow. Low precision indicates a lot of false negatives. 
+• Precision, which is ratio of true high flow days to the days predicted as high flow. Low precision indicates a lot of false positives. 
 
-• Recall, which is ratio of true high flow days to the days that are actually high flow. Low recall indicates a lot of missed events. 
+• Recall, which is the ratio of true high flow days to the days that are actually high flow. Low recall indicates a lot of missed events. 
 
 • F1, which is a single score that balances precision and recall (calculated by their harmonic mean); it is high only when both are high. For this study, the F1 score is likely a better performance indicator than accuracy due to the relative rarity of high flow events. 
 
-The performance metrics are listed below.
+The performance metrics are listed in @DT_performance_testset.
  
 #figure(
   placement: auto,
@@ -887,9 +886,9 @@ The performance metrics are listed below.
   ),
   caption: [Decision Tree Performance on Test Set],
   scope: "parent"
-) <basin-characteristics>
+) <DT_performance_testset>
 
-The decision tree models do only moderately better than guessing. They give relatively few false alarms (71% and 66% precisions) but miss a large number of high flow days (57% and 47% recall), especially at Chattahoochee at Helen. The decision tree model does somewhat better on the Suwanee basin than on the Chattahoochee at Helen basin (0.63 vs 0.55 F1s). 
+The decision tree models do only moderately better than guessing. They give relatively few false alarms (71% and 66% precision) but miss a large number of high flow days (57% and 47% recall), especially at Chattahoochee at Helen. The decision tree model does somewhat better on the Suwanee basin than on the Chattahoochee at Helen basin (0.63 vs 0.55 F1). 
 
 == Comparison of Modeling Approaches
 Comparing the models, similar findings were found for the following: rainfall timing and time lag, effect of urbanization at the daily scale, and high-flow prediction.
@@ -899,6 +898,17 @@ The timing of the rainfall is found to be the most important predictor of stream
 The effect of urbanization on a daily scale is difficult to detect since land cover data change annually, while runoff data change daily. The coefficient of the fractional impervious area component in the PCA regression was close to zero, and the annual impervious cover data cannot explain daily runoff in the decision trees. However, the Gabor transform regression produced a small positive coefficient for fractional impervious area, due to the effect of impervious surfaces increasing runoff. 
 
 Lastly, high flows are difficult to predict and are largely underpredicted. The water balance and PCA regressions underpredicted the highest runoff days, including the September 2009 storm, and the decision trees missed a large number of high-flow days. In contrast, the model that predicts the smoothed seasonal signal had the highest coefficient of determination, which indicates that the models perform better as the predicted quantity becomes less variable.
+
+= Discussion and Next Steps
+All of the four modeling approaches consistently show that the timing of rainfall, rather than its total depth, is the dominant control on daily runoff in the Suwanee and Chattahoochee at Helen basins. The spatially weighted water balance regression improves from an R² of approximately 0.0 to 0.36 at Suwanee Creek when the previous day’s runoff is added. The regression with principal component analysis assigns the largest coefficient to the component contrasting one-day with three-day precipitation. The decision trees split first on two-day and seven-day rainfall totals. 
+
+Urbanization, by contrast, is not detectable at the daily scale. This may be due to multiple reasons, the primary of which is land cover is published annually and not daily. Since the four models are fitted to minimize daily error, little weight seems to be assigned to the annual land cover irrespective of its physical effect. Another important reason is that fractional impervious area is entered in every linear model additively, whereas the physical effect of imperviousness is to increase the fraction of each unit of rainfall that is converted to runoff. The near-zero impervious coefficient suggests that the model form is inadequate rather than that urbanization has no hydrologic effect. The Gabor-transform regression supports this as it returns a positive and significant coefficient on fractional impervious area, and it is also the only model that predicts a smoothed annual amplitude rather than daily depth. The fractional impervious area variable becomes detectable once the daily noise is removed. 
+
+The climate signal in this record lies in temperature and in rainfall intensity rather than in total rainfall. The trend in mean daily precipitation is smaller than one standard deviation of the year-to-year scatter and cannot be distinguished from noise, whereas both temperature variables rise by more than their respective noise bands and annual maximum daily rainfall increases by approximately 7.7 mm per decade. The four models reproduce the runoff response to ordinary weather, but they do not capture the consequences of intensification. The regression models overpredict low flows and underpredict high flows. The decision trees recover only 57% and 47% of high-flow days, and the spatially weighted water balance model overestimates runoff volume on ordinary days while missing event peaks.  
+
+A key next step would be to specify an urbanization variable as an interaction between precipitation and fractional impervious area, so that runoff is modeled as a function of rainfall whose slope depends on the level of development. Another step is to move away from daily runoff depth as the response variable, since it is dominated by rainfall, and use normalized and event-based measures such as the annual runoff ratio, defined as annual runoff depth divided by annual rainfall, the runoff coefficient of individual storms, time to peak, and a flashiness index such as the Richards–Baker index, to isolate the response of the catchment itself and remove the daily noise that obscures the land use signal. A third consideration is to target high-flow events explicitly. This could be through using approaches such as a log-transformed response, class weighting, or a peaks-over-threshold analysis. 
+
+Suwanee Creek and the Chattahoochee River at Helen basins form a well-matched pair, comparable in drainage area and strongly correlated in annual rainfall but sharply divergent in development history. Computing the annual runoff ratio for both basins and testing whether the difference between them widens over the record can isolate the urbanization effect from the regional climate signal that the two basins share. Another approach would be to use a simple curve number rainfall–runoff model driven by observed GridMET precipitation. The model can be run twice for each basin, once with curve number held fixed at its 1985 value and once with the observed annual series; the difference between the two output series estimates the runoff change attributable to land cover change alone, with climate forcing held identical between the runs. These two analyses may offer the most direct answer to the question of how much of the change in runoff is attributable to land use rather than to climate. 
 
 /*This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
 Multivariate regression will also be used to analyze the strength and confidence of correlations between the climate and the urbanization metrics as independent variables and runoff or stream flow as the dependent variable. The regression optimization model will assume linear relationships for all variables except where theory, industry standards, or analysis results establish a clear nonlinear relationship, such as the relationship between CN and runoff in the SCS equation.
