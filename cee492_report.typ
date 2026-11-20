@@ -610,7 +610,7 @@ The models trained on pre-2010 data had greater error in predicting their testin
 
 
 #place(
-  bottom + center,
+  top + center,
   scope: "parent",
   float: true,
   clearance: 0.5em,
@@ -631,7 +631,7 @@ The models trained on pre-2010 data had greater error in predicting their testin
 )
 
 #place(
-  bottom + center,
+  top + center,
   scope: "parent",
   float: true,
   clearance: 1em,
