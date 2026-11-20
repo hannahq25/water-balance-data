@@ -641,45 +641,38 @@ The models trained on pre-2010 data had greater error in predicting their testin
   )
 )
 
-=== Comparison of Results
+== Multiple Linear Regression Model with Principal Component Analysis
 
-Precipitation has the highest coefficient in all models, which is consistent with the direct physical relationship between precipitation and runoff. Its coefficients are roughly equal between the two watersheds, suggesting it is equally important in predicting runoff in both watersheds.
+The model was developed for the Suwanee Creek at Suwanee gage (USGS Gage No. 02334885) and the Chattahoochee River at Helen gage (USGS Gage No. 02330450). The dependent variable is daily runoff depth in millimeters (mm), calculated from daily mean discharge and the watershed drainage area. The record extends from January 3, 1985, to June 10, 2024, and contains 14,404 consecutive days with no missing values for both gages.
 
-Temperature has a greater coefficient in the Chattahoochee watershed's model than in the Suwanee watershed's. This appears to be consistent with the observation that more of the variation in Chattahoochee's normalized stream flow is seasonal, as seen in @normtimeseries.
+Four independent variables were used: (1) one-day precipitation, (2) two-day precipitation, (3) three-day precipitation, and (4) fractional impervious area. One-day precipitation represents watershed-average daily precipitation. These data were taken from the gridded water balance dataset for Suwanee Creek and from the GridMET dataset for Helen. The two- and three-day precipitation are the sum of the current day's precipitation and the precipitation from one or two days prior. The fractional impervious area is the annual mean fractional impervious area of the watershed, taken from the land cover dataset.
 
-Fractional impervious area plays a less significant, or perhaps an insignificant, role in the linear model for the Chattahoochee watershed. This is not surprising, since there is close to zero impervious area in the watershed.
+Every fourth year of the record (1988, 1992, and so on through 2024) was withheld for testing, which resulted in 10,948 days of training data and 3,456 days of testing data at each gage. Withholding every third year and every fifth year resulted in relatively similar regression results, so the four-year interval was retained. Whole years were withheld instead of random days, since flow from a single storm event extends over several days. The selection of random days may place data from the same storm event in both the training and testing data, and may cause the testing results to look better than they actually are. Each variable was standardized to a mean of zero and a standard deviation of one, separately for the training and testing data.
 
-All models confirm that precipitation is more strongly correlated with stream flow than temperature and fractional impervious area, and that fractional impervious area is the least important predictor of Gabor-transformed daily runoff. However, the models have relatively low R#super[2] values and, in most cases, large mean absolute percentage error (MAPE) values between predictions and actual data. Nevertheless, the R#super[2] values of linear models on Gabor-transformed data are higher than those of linear models on raw data. In addition, the large errors are generally due to the model underpredicting extreme peaks and troughs in the real data. A linear model on one frequency column of a Gabor-transform would not be able to predict stream flows at other frequencies, but it does offer an interpretable model to understand amplitudes of seasonal or other periodic flows as a function of precipitation, temperature and fractional impervious area.
-
- == Multiple Linear Regression Model with Principal Component Analysis
-
-The model was developed for the Suwanee Creek at Suwanee gage (USGS Gage No. 02334885). The dependent variable is daily runoff depth in millimeters (mm), calculated from daily mean discharge and the watershed drainage area. The record extends from January 3, 1985, to June 10, 2024, and contains 14,404 consecutive days with no missing values. 
-
-For this model, four independent variables were used: (1) one-day precipitation, (2) two-day precipitation, (3) three-day precipitation, and (4) fractional impervious area. One-day precipitation represents watershed-average daily precipitation and was taken from the gridded water balance dataset. The two- and three-day precipitation show the sum of the current day's precipitation and the precipitation from one or two days prior. Meanwhile, the fractional impervious area is the mean fractional impervious area, taken from the land cover dataset.
-
-A principal component analysis (PCA) was applied to transform the independent variables into uncorrelated components before fitting the regression. Every fourth year of the record (1988, 1992, and so on through 2024) was withheld for testing, and the model was trained on the remaining years. This resulted in 10,948 days of training data and 3,456 days of testing data. Withholding every third and fifth year of record was also tested to determine if this sampling methodology is sensitive to the interval chosen. However, this did not significantly improve the regression results, so the middle value was chosen. 
-
-Whole years were withheld instead of random days, since streamflow has a more gradual daily change than a random fluctuation. Streamflow is highly dependent on precipitation and on the rate of drainage through the drainage network within the watershed, which causes flow from a single storm event to extend over several days. Randomly selecting a day may place data from the same storm event in both training and testing data and may cause the model to overperform. Each variable was then normalized to a mean of zero and a standard deviation of one using the normalization function from the lecture. 
-
-The PCA was performed by applying a singular value decomposition to the normalized training data. The loadings of the resulting principal components, which indicate the contribution of each independent variable to each component, are summarized in the table below.
+A principal component analysis (PCA) was performed by applying a singular value decomposition to the standardized training data. The loadings of the first three components are summarized in @pca-loadings.
 
 #figure(
   placement: auto,
+  scope: "parent",
   table(
-    columns: (2fr, 1fr, 1fr, 1fr),
-    align: (left, center, center, center),
-    table.header([*Variable*], [*PC1*], [*PC2*], [*PC3*]),
-    [One-day precipitation], [−0.55], [0.02], [−0.78],
-    [Two-day precipitation], [−0.61], [0.02], [0.13],
-    [Three-day precipitation], [−0.57], [0.01], [0.61],
-    [Fractional impervious area], [−0.03], [−1.00], [−0.01],
+    columns: (2.2fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+    align: (left, center, center, center, center, center, center),
+    table.header(
+      table.cell(rowspan: 2)[*Variable*],
+      table.cell(colspan: 3)[*Suwanee Creek Watershed*],
+      table.cell(colspan: 3)[*Chattahoochee River at Helen Watershed*],
+      [*PC1*], [*PC2*], [*PC3*], [*PC1*], [*PC2*], [*PC3*]),
+    [One-day precipitation], [−0.55], [−0.02], [0.78], [−0.55], [−0.02], [0.78],
+    [Two-day precipitation], [−0.61], [−0.02], [−0.13], [−0.61], [−0.02], [−0.12],
+    [Three-day precipitation], [−0.57], [−0.01], [−0.61], [−0.57], [−0.01], [−0.62],
+    [Fractional impervious area], [−0.03], [1.00], [0.01], [−0.03], [1.00], [0.01],
   ),
-  caption: [Principal component loadings for the Suwanee Creek watershed],
+  caption: [Principal Component Loadings],
 ) <pca-loadings>
 
-The loadings show how much each variable contributes to a component, where a value closer to 1 (or -1) indicates a large contribution and a value closer to 0 indicates a small contribution. The first principal component is weighted almost equally on the three precipitation variables and represents the overall amount of recent rainfall. The second component consists almost entirely of the fractional impervious area. The third component contrasts the one-day precipitation with the three-day precipitation and therefore represents the timing of the rainfall, that is, whether the rain fell on the same day or on the preceding days. Each component is a direction through the data, so its sign only indicates which way that direction points and is assigned arbitrarily by the PCA; therefore, this does not affect the results. 
+A loading closer to 1 (or −1) indicates a larger contribution of a variable to a component, while a loading closer to 0 indicates a smaller contribution. The first component is weighted almost equally on the three precipitation variables and is interpreted as the overall amount of recent rainfall. The second component mostly consists of the fractional impervious area. Lastly, the third component consists mainly of one-day precipitation and three-day precipitation with opposite signs, which can be interpreted as the timing of the rainfall.
 
-Two models were then fitted to the training data by least squares for comparison. The first uses the four normalized independent variables directly, and the second uses the three retained principal components:
+Two models were fitted to the training data of each gage using least squares. The four standardized independent variables are used in the first equation, while the three retained principal components are used in the second equation:
 
 #v(0.6em)
 #align(center)[
@@ -693,42 +686,86 @@ Two models were then fitted to the training data by least squares for comparison
 ]
 #v(0.6em)
 
-The coefficient of determination for each model, calculated for both the training and testing data, is summarized in the table below.
+The coefficients of determination are summarized in @pca-r2 and the fitted coefficients in @pca-coeff. The variables were standardized in order for the coefficients to be comparable with one another.
 
 #figure(
   placement: auto,
   table(
-    columns: (2fr, 1fr, 1fr),
-    align: (left, center, center),
-    table.header([*Model*], [*Daily $R^2$ (train)*], [*Daily $R^2$ (test)*]),
-    [All four variables], [0.56], [0.59],
-    [PCA, three components], [0.52], [0.53],
+    columns: (1.5fr, 2.2fr, 1fr, 1fr),
+    align: (left, left, center, center),
+    table.header([*Gage*], [*Model*], [*$R^2$ (train)*], [*$R^2$ (test)*]),
+    [Suwanee Creek], [All four variables], [0.56], [0.59],
+    [Suwanee Creek], [PCA, three components], [0.52], [0.53],
+    [Helen], [All four variables], [0.39], [0.43],
+    [Helen], [PCA, three components], [0.39], [0.42],
   ),
-  caption: [Coefficients of determination for the Suwanee Creek regression models],
+  caption: [Coefficients of Determination for Daily Runoff, PCA Regression Models],
 ) <pca-r2>
 
 #figure(
-  image("figures/suwanee_regression_daily_all.png", width: 100%),
-  caption: [Predicted vs. Observed Daily Runoff for Suwanee Creek using All Four Variables],
+  placement: auto,
+  table(
+    columns: (2.2fr, 1fr, 1fr),
+    align: (left, center, center),
+    table.header([*Term*], [*Suwanee Creek*], [*Helen*]),
+    table.cell(colspan: 3)[_Regression on all four variables_],
+    [One-day precipitation], [−0.41], [−0.16],
+    [Two-day precipitation], [0.77], [0.34],
+    [Three-day precipitation], [0.26], [0.41],
+    [Fractional impervious area], [0.04], [0.08],
+    table.cell(colspan: 3)[_PCA regression_],
+    [PC1 (rainfall amount)], [−0.40], [−0.36],
+    [PC2 (fractional impervious area)], [0.03], [0.07],
+    [PC3 (rainfall timing)], [−0.57], [−0.42],
+  ),
+  caption: [Regression Coefficients for the Standardized Variables and Principal Components],
+) <pca-coeff>
+
+The $R^2$ values range from 0.52 to 0.59 at Suwanee Creek and from 0.39 to 0.43 at Helen. The values for the testing data are similar to those for the training data, indicating that the models are not overfitted to the training years. The $R^2$ of the PCA regression is equal to or slightly lower than that of the regression on all four variables at both watersheds, since one fewer input variable is used.
+
+In the regression on all four variables, the largest coefficient is from the two-day precipitation at Suwanee Creek and the three-day precipitation at Helen, which indicates that runoff responds to rainfall more slowly at Helen. In the PCA regression, the negative coefficient of PC3, together with its positive loading on one-day precipitation and negative loading on three-day precipitation, means that runoff is higher when the rain fell on the preceding days than when it fell on the same day. This is consistent with the water balance regression, in which the largest improvement was seen by including the previous day.
+
+The coefficient of the fractional impervious area component (PC2) is 0.03 at Suwanee Creek and 0.07 at Helen. An effect of urbanization on daily runoff was therefore not detected at Suwanee Creek, even though the fractional impervious area increased substantially. Additionally, the coefficient is seen to be larger at Helen, where the fractional impervious area barely changed over time, so it cannot be attributed to urbanization. The lack of a detected effect may be due to the form of a linear model, in which a given level of imperviousness can only add a fixed amount of runoff, whereas imperviousness is expected to increase the runoff produced per unit of rainfall.
+
+#figure(
+  placement: auto,
+  scope: "parent",
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em,
+    image("figures/suwanee_regression_daily_all.png", width: 100%),
+    image("figures/helen_regression_daily_all.png", width: 100%),
+  ),
+  caption: [Predicted vs. Observed Daily Runoff using All Four Variables, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
 ) <pca-daily-all>
 
 #figure(
-  image("figures/suwanee_regression_daily_pca.png", width: 100%),
-  caption: [Predicted vs. Observed Daily Runoff for Suwanee Creek using Three Principal Components],
+  placement: auto,
+  scope: "parent",
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em,
+    image("figures/suwanee_regression_daily_pca.png", width: 100%),
+    image("figures/helen_regression_daily_pca.png", width: 100%),
+  ),
+  caption: [Predicted vs. Observed Daily Runoff using Three Principal Components, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
 ) <pca-daily-pca>
 
-The $R^2$ values from the two models range from 0.52 to 0.59 for daily runoff. The values for the testing data are similar to those for the training data, which indicates that the models are not overfitted to the training years. This is consistent with the water balance regression described above, in which including the previous day produced the largest improvement in the model. In the PCA regression, the timing component (PC3) has the largest coefficient (0.58), followed by the rainfall amount component (PC1, −0.40), which confirms that the delay between rainfall and streamflow is the most important feature captured by the aggregated precipitation variables. 
-
-The PCA regression has a slightly lower $R^2$ for daily runoff than the regression on all four variables (0.53 compared to 0.59 for the testing data), since it uses one fewer input variable. 
-
-The figure below compares observed and predicted daily runoff for the September 2009 storm, which is the same storm shown in the water balance regression section. This period falls within the training years, so the models are expected to perform well in predicting the data. The two models closely follow the smaller rises in runoff before and after the main storm. However, the observed runoff peaked at approximately 66 mm on September 21, whereas the predicted peaks were approximately 24 mm for the regression on all four variables and 21 mm for the PCA regression, and both occurred one day later.
+The observed and predicted daily runoff for the September 2009 storm are shown in @pca-sept2009. This is the same storm shown in the water balance regression section, and it falls within the training years. The observed runoff at Suwanee Creek peaked at approximately 66 mm on September 21, whereas the predicted peaks were approximately 24 mm for the regression on all four variables and 21 mm for the PCA regression, one day later. At Helen, the observed peak of approximately 21 mm on September 21 was predicted as approximately 18 mm on the same day, although the runoff in the days before the storm was overpredicted.
 
 #figure(
-  image("figures/suwanee_pca_sept2009.png", width: 100%),
-  caption: [Observed and predicted daily runoff for Suwanee Creek during September 2009],
+  placement: auto,
+  scope: "parent",
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em,
+    image("figures/suwanee_pca_sept2009.png", width: 100%),
+    image("figures/helen_pca_sept2009.png", width: 100%),
+  ),
+  caption: [Observed and Predicted Daily Runoff during September 2009, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
 ) <pca-sept2009>
 
-Two limitations can be identified: (1) days with low runoff tend to be overpredicted for both models, and (2) days with the highest runoff are underpredicted, as shown by the points falling below the line at high observed runoff, by the points falling above the line at low observed runoff, and by the comparison for the September 2009 storm. Additionally, the coefficient of the fractional impervious area component (PC2) is close to zero (−0.03), which indicates that the linear model does not detect an effect of urbanization on daily runoff at Suwanee Creek, even though the fractional impervious area increased substantially over the period of record. A linear model can only add a fixed amount of runoff for a given level of imperviousness, whereas imperviousness is expected to increase the runoff produced by each unit of rainfall.
+Two limitations can be identified: (1) days with low runoff tend to be overpredicted at both gages, and (2) days with the highest runoff are underpredicted, as shown by the points falling below the line at high observed runoff and above the line at low observed runoff in @pca-daily-all and @pca-daily-pca, and by the comparison for the September 2009 storm.
 
 ==  Decision Tree with Feature Selection and Cross Validation
 
