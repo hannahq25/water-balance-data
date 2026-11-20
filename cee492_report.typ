@@ -464,7 +464,7 @@ These additional variables and weights are documented in <fig-waterbalancemodifi
 
 Within the model, weights were estimated for each 1 square kilometer grid cell.  For example, the Suwanee Creek gage (USGS Gage No 02334885) covers 112 cells.  Therefore, in the linear regression model  there are 112 weights, one for each grid cell at time t.  In the model that incorporates both time t and t-1, there are twice as many weights, 224.  As part of the process, the project evaluated three different methods to estimate the weights on each grid cell using the Machine Learning in Julia (MLJ) and MLJLinearModels packages: linear regressor, ridge regressor, and lasso regressor.
  
-Similar to the other methods evaluated, the project looked at these approaches with two gages, Suwanee Creek at Suwanee (02334885) and the Chattahoochee River at Helen (02330450).  This will allow evaluation of both an urbanizing watershed and one with a very low level of development.  A summary of the R-Squared of the various scenarios with different time ranges, model, and lambdas is included in the tables below.   In these models the models were trained and tested across the full datasets.  Because in this case we trained over the full time period, there was no noticeable degradation of model results due to urbanization and the psat non-stationarity of the urbanizing watershed would not impact the ability of the approach to predict runoff in upcoming years.
+Similar to the other methods evaluated, the project looked at these approaches with two gages, Suwanee Creek at Suwanee (02334885) and the Chattahoochee River at Helen (02330450).  This will allow evaluation of both an urbanizing watershed and one with a very low level of development.  A summary of the R-Squared of the various scenarios with different time ranges, model, and lambdas is included in the tables below.   In these models the models were trained on data between October 1984 and September 2016 and tested across data between Octobeer 2016 and September 2024.  
 
 #figure(
     caption: [Suwanee Creek at Suwanee (02334885) R-Squared for Various Model Scenarios Including Time t through t-5],
@@ -477,13 +477,15 @@ Similar to the other methods evaluated, the project looked at these approaches w
     [*Day Range*], [*0*], [*0-1*], [*0-2*], [*0-3*], [*0-4*], [*0-5*],
   ),
 
-  [*Linear*],            [0.11], [0.48], [0.50], [0.51], [0.51],  [0.52],
-  [*Ridge $lambda = 0.001$*], [0.11], [0.48], [0.49], [0.50], [0.51],  [0.51],
-  [*Ridge $lambda = 0.01$*],  [0.11], [0.47], [0.48], [0.49], [0.49],  [0.50],
-  [*Ridge $lambda = 0.1$*],   [0.11], [0.46], [0.47], [0.48], [0.48],  [0.48],
-  [*Lasso $lambda = 0.001$*], [0.11], [0.47], [0.49], [0.49], [0.50], [0.50],
-  [*Lasso $lambda = 0.01$*],  [0.10], [0.46], [0.47], [0.47], [0.47],  [0.47],
-  [*Lasso $lambda = 0.1$*],   [0.08], [0.43], [0.44], [0.44], [0.44],  [0.44],
+
+
+  [*Linear*],            [-0.06], [0.28], [0.25], [0.22], [0.2], [0.19],
+  [*Ridge $lambda = 0.001$*], [-0.024], [0.33], [0.33], [0.32], [0.32], [0.31],
+  [*Ridge $lambda = 0.01$*],  [0.00065], [0.37], [0.37], [0.38], [0.38], [0.37],
+  [*Ridge $lambda = 0.1$*],   [0.017], [0.4], [0.41], [0.41], [0.41], [0.41],
+  [*Lasso $lambda = 0.001$*], [-0.014], [0.35], [0.35], [0.35], [0.35], [0.35],
+  [*Lasso $lambda = 0.01$*],  [0.019], [0.4], [0.41], [0.41], [0.41], [0.41],
+  [*Lasso $lambda = 0.1$*],   [0.017], [0.39], [0.4], [0.41], [0.41], [0.41],
 )
   ) <suwanee_r2_table>
 
@@ -498,27 +500,28 @@ Similar to the other methods evaluated, the project looked at these approaches w
     [*Day Range*], [*0*], [*0-1*], [*0-2*], [*0-3*], [*0-4*], [*0-5*],
   ),
 
-  [*Linear*],                 [0.16], [0.35], [0.40], [0.43], [0.45],  [0.47],
-  [*Ridge $lambda = 0.001$*], [0.16], [0.35], [0.39], [0.43], [0.44],  [0.46],
-  [*Ridge $lambda = 0.01$*],  [0.16], [0.34], [0.38], [0.41], [0.43],  [0.44],
-  [*Ridge $lambda = 0.1$*],   [0.15], [0.33], [0.37], [0.40], [0.41],  [0.43],
-  [*Lasso $lambda = 0.001$*], [0.16], [0.35], [0.39], [0.42], [0.43], [0.45],
-  [*Lasso $lambda = 0.01$*],  [0.15], [0.33], [0.37], [0.39], [0.41],  [0.42],
-  [*Lasso $lambda = 0.1$*],   [0.14], [0.31], [0.34], [0.37], [0.38],  [0.39],
+  [*Linear*],                 [-0.21], [-0.22], [-0.48], [-0.61], [-0.89], [-1.1],
+  [*Ridge $lambda = 0.001$*], [-0.029], [0.1], [0.067], [0.065], [0.056], [0.059],
+  [*Ridge $lambda = 0.01$*],  [0.007], [0.16], [0.16], [0.17], [0.18], [0.18],
+  [*Ridge $lambda = 0.1$*],   [0.018], [0.19], [0.22], [0.23], [0.24], [0.25],
+  [*Lasso $lambda = 0.001$*], [-0.0055], [0.13], [0.12], [0.12], [0.13],[0.14],
+  [*Lasso $lambda = 0.01$*],  [0.0088], [0.19], [0.22], [0.24], [0.25], [0.26],
+  [*Lasso $lambda = 0.1$*],   [0.03], [0.2], [0.23], [0.24], [0.26], [0.27],
 )
+
   ) <chattahoochee_r2_table>
 
-As expected, the linear regressor produced the highest r-squared value although none of the models produced consistently strong results.  In general, the model produced significantly better results once the second day (i.e. the water balance runoff from the day before) was added to the estimate.  There was typically minimal improvement in the model as more days were added beyond two days.  This was true for both gages.  It is expected that the length of time to include would change based on the watershed size as the overall travel time within the watershed will change.  In this case both gages have a similar watershed size and therefore produce similar results with respect to time.   
+None of the models produced consistently strong results.  In general, the model produced significantly better results once the second day (i.e. the water balance runoff from the day before) was added to the estimate.  There was typically minimal improvement in the model as more days were added beyond two days.  This was true for both gages.  It is expected that the length of time to include would change based on the watershed size as the overall travel time within the watershed will change.  In this case both gages have a similar watershed size and therefore produce similar results with respect to time. It was unexpected that the model would have more difficulty fitting the Chattahoochee River gage since the watershed did not experience any change in land use over the time period evaluated.  One potential explanation is that the Chattahoochee River gage is located in a more orographically extereme location.  Therefore the rainfall data, spatially downscalled from a 4 kilometer grid, may not be accurately reflecting the rainfall within the watershed.  
 
-The weights were also evaluated spatially.  Below are some sample plots of the beta values for the linear regressor at Suwanee Creek.  In this example, weights for the flow at time t were developed across t through t-5 so the bottom right graph shows the weights used on the spatially estimated runoff at time t, then t-1, etc.  Each was then summed to estimate the final runoff at the gaged location. 
+The weights were also evaluated spatially.  @fig-betasuwaneecreekd are some sample plots of the beta values for the ridge regressor at Suwanee Creek with a $lambda = 0.01$  In this example, weights for the flow at time t were developed across t through t-5 so the bottom right graph shows the weights used on the spatially estimated runoff at time t, then t-1, etc.  Each was then summed to estimate the final runoff at the gaged location. 
 
 #figure(
-  caption: [Example of Beta Weights for Suwanee Creek at Suwanee (02334885) for Linear Regressor with Time t through t-5
+  caption: [Example of Beta Weights for Suwanee Creek at Suwanee (02334885) for Ridge Regressor with Time t through t-5
   ],
   image("figures/SampleBetaGrids.png", width: 100%),
 )<fig-betasuwaneecreekd>
 
-As shown in the above figures, stronger weights are in the southwest of the watershed, which is where the gage is located.  This logically makes sense as this location would have a more direct impact on the flow at the gage.  In addition, the higher weights occur on the spatially estimated runoff at day t-1, confirming the expected behavior that there is a delay between the rainfall and the runoff expected at the gage.  The other item of note from these figures is the known issue with a linear regressor in a spatial context: it produces strong swings between cells physically next to each other due to overfitting to the training data.   
+Stronger weights are in the southwest which is where the gage is located.  This logically makes sense as this location would have a more direct impact on the flow at the gage.  In addition, the higher weights occur on the spatially estimated runoff at day t=0 and t-1, confirming the expected behavior that there is a delay between the rainfall and the runoff expected at the gage.  Compared with the linear regression results, the ridge regression generally produced lower weights and fewer adjacent extremes especially at the higher lamba values.  The ridge regression penalty term, lambda, penalizes large coefficients and would be expected to produce a more generalized result.  
 
 The differences between the modeling results on specific rainfall events can also be evaluated by looking at the final runoff estimate over time between the various models, as shown in <fig-samplehydrographs> developed from predictions of a rainfall occurring during September 2009.   
 
