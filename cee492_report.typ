@@ -235,6 +235,8 @@ Gwinnett County, GA was chosen as the focus area due to its rapid urbanization w
   image("figures/LocationMap.png", width: 80%),
   caption: [Location of the 15 gaged watersheds evaluated in this report],
 ) <locationmap>
+Alenbauch et a. @alenbauch evalauted the overall impact of urbanization on runoff within the original 15 watershed within  Gwinnett County, although they did not evaluate the impacts of a changing climate or changing impervious over time on runoff.  The paper focused on runoff statistics such as runoff-ratio and baseflow between the different watersheds.  It confirmed percent impreviousness impacted runoff statistic swithin the watersheds.
+
 In addition, because of the intense urbanization in all of the Gwinnett Watersheds, a sixteenth watershed was selected nearby without urbanization over the study period.  The gage, Chattahoochee River at Helen, GA (USGS Gage 02330450) was selected as a control watershed to compare the results of the Gwinnett County watersheds to a watershed that has not been impacted by urbanization.  
 
 Analyzing runoff and stream flow requires the precision of daily data. However, urbanization trends are best observed at annual or decadal intervals. Therefore, for each watershed and time period, the data was  summarized by the daily average, median, maximum, and minimum if available, and each statistical parameter was also estimated on an annual basis.
