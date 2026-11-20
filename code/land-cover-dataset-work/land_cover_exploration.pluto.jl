@@ -17,16 +17,22 @@ begin
 end
 
 # ╔═╡ a609ad42-48ad-4c37-9e24-ccbf58bf7717
-using CSV, DataFrames, Plots, StatsPlots, Measures
-
-# ╔═╡ e5494703-d48f-43c5-a8e6-1b4dda9992df
-using StatsBase
+begin
+    using CSV, DataFrames, Plots, StatsPlots, Measures, StatsBase, Colors
+end
 
 # ╔═╡ 84d3d0c7-e28b-4fa6-bed9-b7aefba00d51
-df_lc = CSV.read("land_cover_annual_with_CN.csv", DataFrame)
+begin
+    df = CSV.read("land_cover_annual_with_CN.csv", DataFrame)
+    df_suwanee = df[df.gage .== 2334885, :]
+
+    df_lc_helen = CSV.read("land_cover_annual_Helen.csv", DataFrame)
+    df_fctimp_helen = CSV.read("../../Datasets/fctimp_annual_ch_helen.csv", DataFrame)
+    df_helen = outerjoin(df_fctimp_helen, df_lc_helen, on = [:year, :gage]);
+end
 
 # ╔═╡ 91b47aad-d213-45f8-8eec-86c7c604c0cf
-dfg = groupby(df_lc, :gage)
+dfg = groupby(df, :gage);
 
 # ╔═╡ 8730dbf3-b041-4994-b94a-3ab230006da1
 function plotVariableByWatershed(variable, variableName)
@@ -45,31 +51,24 @@ function plotVariableByWatershed(variable, variableName)
 			"02334885" => "Suwanee Creek",
 			"02335350" => "Crooked Creek",
 			"02336030" => "North Fork Peachtree Creek")
-    # plots = []
-    # for df in dfg
-    #     push!(plots, plot(df.year, df[!, variable], label=:none,
-	#    		title=get(gage_names, "0" * string(df.gage[1]), ""), 
-	# 		titlefontsize=12, tickfontsize=10, 
-	# 		left_margin=15mm, right_margin=10mm))
-    # end
-
-	# l = @layout [a{0.05h}; grid(8, 2)]
-	# p_title = plot(title = "$variableName Across Watersheds", framestyle = nothing, 
-    #            showaxis = false, xticks = false, yticks = false, bottom_margin = -30mm)
-	# plot(p_title, plots..., layout=l, size=(800, 2400))
-
 	p1 = plot()
 	basin_data = []
 	for df in dfg
 		push!(basin_data, df[!, variable])
         plot!(df.year, df[!, variable], color=:gray, label=:none)
-			# legend=:outerright,
     end
 	plot!([], [], color=:gray, label="Individual basins")
 	plot!(dfg[1].year, mean(basin_data), linewidth=3,
 		label="Mean of 15 basins", 
 		ylabel=variableName, ylabelfontsize=9,
 		xtickfontsize=8, ytickfontsize=8, size=(400,300))
+
+	# plot(df_suwanee.year, df_suwanee[!, variable], label="Suwanee Creek")
+	# plot!(df_helen.year, df_helen[!, variable], 
+	# 	label="Chattahoochee River at Helen",
+	# 	ylabel=variableName, ylabelfontsize=9,
+	# 	xtickfontsize=8, ytickfontsize=8, size=(400,300),
+	# 	legend=:outerbottom, bottom_margin=-5mm)
 end
 
 # ╔═╡ 3010385e-60b9-459f-a652-7a2430d127ed
@@ -81,9 +80,35 @@ function plotVariableByWatershedSave(variable, variableName)
     end
 end
 
+# ╔═╡ 878ff670-02e2-46f7-a9c0-bfb52094d895
+begin
+	x1 = df_suwanee.year
+	y_series1 = hcat(
+        df_suwanee[!, :DevelopedMediumIntensity_percent], 
+		df_helen[!, :DevelopedMediumIntensity_percent],
+        df_suwanee[!, :DeciduousForest_percent], 
+		df_helen[!, :DeciduousForest_percent],
+	)
+
+	labels1 = permutedims([
+		"Medium Intensity Developed Land (Suwanee Creek)", 
+        "Medium Intensity Developed Land (Chattahoochee River at Helen)",
+		"Deciduous Forest Land Cover (Suwanee Creek)",
+        "Deciduous Forest Land Cover (Chattahoochee River at Helen)",
+	])
+
+	colors1 = [:dodgerblue :blue :orange :orangered]
+
+    plot(x1, y_series1, label=labels1, ylabel="Percentage", 
+		color=colors1, #legend_column=2, 
+		ylabelfontsize=11, xtickfontsize=9, ytickfontsize=9, 
+		size=(500,400), legend=:outerbottom, 
+		bottom_margin=-5mm)
+    savefig("../../figures/land-cover/LncCovByWatershed.png")
+end
+
 # ╔═╡ 245fe526-b4de-43d6-b6e4-88620c86ab25
 plotVariableByWatershedSave(:FctImp_mean, "Mean Fractional Impervious Area")
-
 
 # ╔═╡ 6b2b6b64-0b15-44c4-bb9f-5727d96ab37d
 plotVariableByWatershedSave(:CN_mean, "Mean Curve Number")
@@ -113,11 +138,11 @@ plotVariableByWatershedSave(:BarrenLand_percent, "% Barren Land")
 # ╠═e481b52e-43d2-4d81-a479-2c8ab50be103
 # ╠═88a6380c-378e-4608-876a-36a9a80be835
 # ╠═a609ad42-48ad-4c37-9e24-ccbf58bf7717
-# ╠═e5494703-d48f-43c5-a8e6-1b4dda9992df
 # ╠═84d3d0c7-e28b-4fa6-bed9-b7aefba00d51
 # ╠═91b47aad-d213-45f8-8eec-86c7c604c0cf
 # ╠═8730dbf3-b041-4994-b94a-3ab230006da1
 # ╠═3010385e-60b9-459f-a652-7a2430d127ed
+# ╠═878ff670-02e2-46f7-a9c0-bfb52094d895
 # ╠═245fe526-b4de-43d6-b6e4-88620c86ab25
 # ╠═6b2b6b64-0b15-44c4-bb9f-5727d96ab37d
 # ╠═c582a8a9-b39b-42d0-8614-d23862e2500b
