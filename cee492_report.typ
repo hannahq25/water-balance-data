@@ -526,12 +526,6 @@ The models yielded the coefficients in @gabor-coeff-80. The linear models were t
   ),
 ) <gabor-error-80>
 
-=== Training on Pre-2010 Data
-
-For each watershed, the linear model was also trained on data before 2010 and tested on data from 2010-2024, resulting in the coefficients in @gabor-coeff-2010 and performance metrics in @gabor-error-2010.
-
-The models trained on pre-2010 data had greater error in predicting their testing data than in predicting the post-2010 training data, most likely due to greater extremes in weather and streamflow patterns in the pre-2010 years.
-
 #pagebreak()
 #figure(
   placement: top,
@@ -572,6 +566,12 @@ The models trained on pre-2010 data had greater error in predicting their testin
   )
 )
 #pagebreak()
+
+=== Training on Pre-2010 Data
+
+For each watershed, the linear model was also trained on data before 2010 and tested on data from 2010-2024, resulting in the coefficients in @gabor-coeff-2010 and performance metrics in @gabor-error-2010.
+
+The models trained on pre-2010 data had greater error in predicting their testing data than in predicting the post-2010 training data, most likely due to greater extremes in weather and streamflow patterns in the pre-2010 years.
 
 #figure(
     caption: [Gabor Linear Model Coefficients, Trained on Pre-2010 Data],
