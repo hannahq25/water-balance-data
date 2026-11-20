@@ -548,11 +548,63 @@ Then, a Gabor matrix was calculated for each variable. A relatively large standa
 
 In addition, fractional impervious area was selected as a variable that quantifies urbanization over time, in order to compare the effects of urbanization and climate variables on Gabor-transformed runoff. In @infiltration-capacity, CN was introduced as an aggregate metric of infiltration capacity in a watershed. A linear regression between the annual CNs and fractional impervious areas of all watersheds from 1985-2025 yields an R#super[2] of 0.93, indicating that CN and fractional impervious area are confounded and only one should be used in a regression model. Since calculating one CN value for a watershed involves more rounding error than calculating the mean fractional impervious area, the latter was selected and is shown in @gaboramplitudes. Note that fractional impervious area increases over time for both  watersheds, but its magnitude is negligible in Chattahoochee River at Helen compared to Suwanee Creek.
 
-#place(
-  top + center,
+The Gabor-transformed variables, plus fractional impervious area, were passed into a multiple linear regression model of the form:
+
+$ S_"Gabor" = a_0 + a_1 P_"Gabor" + a_2 T_"Gabor" + a_3 F $
+
+Where $S_"Gabor"$ is Gabor-transformed streamflow, $P_"Gabor"$ is Gabor-transformed precipitation, $T_"Gabor"$ is Gabor-transformed temperature, $F$ is mean fractional impervious area, and $a_0$ through $a_3$ are constant coefficients.
+
+=== Training on 80% of Data
+
+For each watershed, 20% of the data was withheld for testing using a Xoshiro random number generator with a seed of 42 from the Random Julia package. The regression model was trained on the other 80% of the data, utilizing the GLM Julia package.
+
+The models yielded the coefficients in @gabor-coeff-80. The linear models were then used to predict stream flow for the testing data, as shown in @gabor-predictions. Performance metrics are summarized in @gabor-error-80, where MAPE is Mean Absolute Percentage Error and RMSE is Root Mean Square Error.
+
+#figure(
+  caption: [Gabor Linear Model Coefficients, Trained on 80% of Data],
+  table(
+    columns: (auto, auto, auto, auto, auto, auto, auto,),
+    align: (center+horizon, center+horizon, center+horizon,),
+    table.header(
+      table.cell(rowspan:2)[*Variable*],
+      table.cell(colspan:3)[*Suwanee Creek Watershed*],
+      table.cell(colspan:3)[*Chattahoochee River at Helen Watershed*],
+      [*Coeff.*], [*t-score*], [*Pr(>|t|)*],
+      [*Coeff.*], [*t-score*], [*Pr(>|t|)*]),
+    "Intercept", "8.761e-4", "17.48", "<1e-66",     "4.124e-3", "38.66", "<1e-99", 
+      $P_"Gabor"$, "2.296e-1", "157.34", "<1e-99",   "2.192e-1", "94.79", "<1e-99",
+      $T_"Gabor"$, "-4.594e-2", "-61.00", "<1e-99",  "-8.030e-2", "-43.98", "<1e-99",
+      $F$, "3.834e-4", "21.07", "<1e-95",            "5.034e-4", "13.44", "<1e-40"
+  ),
+) <gabor-coeff-80>
+
+#figure(
+  caption: [Gabor Linear Model Metrics, Trained on 80% of Data],
+  table(
+    columns: (35mm, auto, auto,),
+    align: (center+horizon, center+horizon, center+horizon,),
+    table.header(
+      table.cell()[*Variable*],
+      table.cell[*Suwanee Creek Watershed*],
+      table.cell[*Chattahoochee River at Helen Watershed*],),
+    $R^2$, "0.72", "0.51",
+    [MAPE on Training Data], "44.17%", "42.91%",
+    "MAPE on Testing Data", "45.96%", "43.98%",
+    [RMSE on Training Data], "1.946e-3","4.003e-3",
+    "RMSE on Testing Data", "1.985e-3", "4.067e-3",
+  ),
+) <gabor-error-80>
+
+=== Training on Pre-2010 Data
+
+For each watershed, the linear model was also trained on data before 2010 and tested on data from 2010-2024, resulting in the coefficients in @gabor-coeff-2010 and performance metrics in @gabor-error-2010.
+
+The models trained on pre-2010 data had greater error in predicting their testing data than in predicting the post-2010 training data, most likely due to greater extremes in weather and streamflow patterns in the pre-2010 years.
+
+#pagebreak()
+#figure(
+  placement: top,
   scope: "parent",
-  float: true,
-  clearance: 0.8em,
   stack(
     dir: ttb,
     spacing: 0.8em,
@@ -588,38 +640,43 @@ In addition, fractional impervious area was selected as a variable that quantifi
     )<gaboramplitudes>],
   )
 )
+#pagebreak()
 
-// #place(
-//   top + center,
-//   scope: "parent",
-//   float: true,
-//   clearance: 1.5em,
-//   stack(
-//     dir: ttb,
-//     spacing: 0.8em,
-//     [#figure(
-//       grid(
-//         columns: (1fr, 1fr),
-//         gutter: 1em,
-//         image("figures/gabor-transform/SuwaneeGaborMatrixAnnualFreq.png", width: 100%),
-//         image("figures/gabor-transform/HelenGaborMatrixAnnualFreq.png", width: 100%),
-//       ),
-//       caption: [Amplitudes of Gabor-Transformed Data at 1/year Frequency and Fractional Impervious Area, Suwanee Creek Watershed (left) and Chattahoochee River at Helen Watershed (right)],
-//     )],
-//   )
-// )
+#figure(
+    caption: [Gabor Linear Model Coefficients, Trained on Pre-2010 Data],
+    table(
+      columns: (auto, auto, auto, auto, auto, auto, auto,),
+      align: (center+horizon, center+horizon, center+horizon,),
+      table.header(
+        table.cell(rowspan:2)[*Variable*],
+        table.cell(colspan:3)[*Suwanee Creek Watershed*],
+      table.cell(colspan:3)[*Chattahoochee River at Helen Watershed*],
+        [*Coeff.*], [*t-score*], [*Pr(>|t|)*],
+        [*Coeff.*], [*t-score*], [*Pr(>|t|)*]),
+      "Intercept", "9.202e-4", "14.81", "<1e-48",     "4.241e-3", "37.73", "<1e-99", 
+       $P_"Gabor"$, "2.257e-1", "125.91", "<1e-99",   "2.046e-1", "84.11", "<1e-99",
+       $T_"Gabor"$, "-4.309e-2", "-46.90", "<1e-99",  "-7.953e-2", "-41.63", "<1e-99",
+       $F$, "4.099-4", "14.52", "<1e-46",             "1.134e-4", "2.29", "0.0219"
+    ),
+  ) <gabor-coeff-2010>
 
-The Gabor-transformed variables, plus fractional impervious area, were passed into a multiple linear regression model of the form:
+#figure(
+    caption: [Gabor Linear Model Metrics, Trained on Pre-2010 Data],
+    table(
+      columns: (35mm, auto, auto, ),
+      align: (center+horizon, center+horizon, center+horizon,),
+      table.header(
+        table.cell()[*Variable*],
+        table.cell[*Suwanee Creek Watershed*],
+        table.cell[*Chattahoochee River at Helen Watershed*],),
+      $R^2$, "0.67", "0.50",
+      [MAPE on Training Data], "52.07%", "42.91%",
+      "MAPE on Testing Data", "30.98%", "38.94%",
+      [RSME on Training Data], "2.098e-3","3.688e-3",
+      "RSME on Testing Data", "1.682e-3", "4.646e-3",
+    ),
+  ) <gabor-error-2010>
 
-$ S_"Gabor" = a_0 + a_1 P_"Gabor" + a_2 T_"Gabor" + a_3 F $
-
-Where $S_"Gabor"$ is Gabor-transformed streamflow, $P_"Gabor"$ is Gabor-transformed precipitation, $T_"Gabor"$ is Gabor-transformed temperature, $F$ is mean fractional impervious area, and $a_0$ through $a_3$ are constant coefficients.
-
-=== Training on 80% of Data
-
-For each watershed, 20% of the data was withheld for testing using a Xoshiro random number generator with a seed of 42 from the Random Julia package. The regression model was trained on the other 80% of the data, utilizing the GLM Julia package.
-
-The models yielded the coefficients in @gabor-coeff-80. The linear models were then used to predict stream flow for the testing data, as shown in @gabor-predictions. Performance metrics are summarized in @gabor-error-80, where MAPE is Mean Absolute Percentage Error and RMSE is Root Mean Square Error.
 
 #place(
   bottom + center,
@@ -662,82 +719,6 @@ The models yielded the coefficients in @gabor-coeff-80. The linear models were t
   )
 )
 
-#figure(
-  caption: [Gabor Linear Model Coefficients, Trained on 80% of Data],
-  table(
-    columns: (auto, auto, auto, auto, auto, auto, auto,),
-    align: (center+horizon, center+horizon, center+horizon,),
-    table.header(
-      table.cell(rowspan:2)[*Variable*],
-      table.cell(colspan:3)[*Suwanee Creek Watershed*],
-      table.cell(colspan:3)[*Chattahoochee River at Helen Watershed*],
-      [*Coeff.*], [*t-score*], [*Pr(>|t|)*],
-      [*Coeff.*], [*t-score*], [*Pr(>|t|)*]),
-    "Intercept", "8.761e-4", "17.48", "<1e-66",     "4.124e-3", "38.66", "<1e-99", 
-      $P_"Gabor"$, "2.296e-1", "157.34", "<1e-99",   "2.192e-1", "94.79", "<1e-99",
-      $T_"Gabor"$, "-4.594e-2", "-61.00", "<1e-99",  "-8.030e-2", "-43.98", "<1e-99",
-      $F$, "3.834e-4", "21.07", "<1e-95",            "5.034e-4", "13.44", "<1e-40"
-  ),
-) <gabor-coeff-80>
-
-#figure(
-  caption: [Gabor Linear Model Metrics, Trained on 80% of Data],
-  table(
-    columns: (35mm, auto, auto,),
-    align: (center+horizon, center+horizon, center+horizon,),
-    table.header(
-      table.cell()[*Variable*],
-      table.cell[*Suwanee Creek*],
-      table.cell[*Chattahoochee R.*],),
-    $R^2$, "0.72", "0.51",
-    [MAPE on Training Data], "44.17%", "42.91%",
-    "MAPE on Testing Data", "45.96%", "43.98%",
-    [RMSE on Training Data], "1.946e-3","4.003e-3",
-    "RMSE on Testing Data", "1.985e-3", "4.067e-3",
-  ),
-) <gabor-error-80>
-
-=== Training on Pre-2010 Data
-
-For each watershed, the linear model was also trained on data before 2010 and tested on data from 2010-2024, resulting in the coefficients in @gabor-coeff-2010 and performance metrics in @gabor-error-2010.
-
-The models trained on pre-2010 data had greater error in predicting their testing data than in predicting the post-2010 training data, most likely due to greater extremes in weather and streamflow patterns in the pre-2010 years.
-
-#figure(
-    caption: [Gabor Linear Model Coefficients, Trained on Pre-2010 Data],
-    table(
-      columns: (auto, auto, auto, auto, auto, auto, auto,),
-      align: (center+horizon, center+horizon, center+horizon,),
-      table.header(
-        table.cell(rowspan:2)[*Variable*],
-        table.cell(colspan:3)[*Suwanee Creek Watershed*],
-      table.cell(colspan:3)[*Chattahoochee River at Helen Watershed*],
-        [*Coeff.*], [*t-score*], [*Pr(>|t|)*],
-        [*Coeff.*], [*t-score*], [*Pr(>|t|)*]),
-      "Intercept", "9.202e-4", "14.81", "<1e-48",     "4.241e-3", "37.73", "<1e-99", 
-       $P_"Gabor"$, "2.257e-1", "125.91", "<1e-99",   "2.046e-1", "84.11", "<1e-99",
-       $T_"Gabor"$, "-4.309e-2", "-46.90", "<1e-99",  "-7.953e-2", "-41.63", "<1e-99",
-       $F$, "4.099-4", "14.52", "<1e-46",             "1.134e-4", "2.29", "0.0219"
-    ),
-  ) <gabor-coeff-2010>
-
-#figure(
-    caption: [Gabor Linear Model Metrics, Trained on Pre-2010 Data],
-    table(
-      columns: (35mm, auto, auto, ),
-      align: (center+horizon, center+horizon, center+horizon,),
-      table.header(
-        table.cell()[*Variable*],
-        table.cell[*Suwanee Creek Watershed*],
-        table.cell[*Chattahoochee River at Helen Watershed*],),
-      $R^2$, "0.67", "0.50",
-      [MAPE on Training Data], "52.07%", "42.91%",
-      "MAPE on Testing Data", "30.98%", "38.94%",
-      [RSME on Training Data], "2.098e-3","3.688e-3",
-      "RSME on Testing Data", "1.682e-3", "4.646e-3",
-    ),
-  ) <gabor-error-2010>
-
 === Comparison of Results
 
 Precipitation has the highest coefficient in all models, which is consistent with the direct physical relationship between precipitation and runoff. Its coefficients are roughly equal between the two watersheds, suggesting it is equally important in predicting runoff in both watersheds.
@@ -749,6 +730,207 @@ Fractional impervious area plays a less significant, or perhaps an insignificant
 All models confirm that precipitation is more strongly correlated with stream flow than temperature and fractional impervious area, and that fractional impervious area is the least important predictor of Gabor-transformed daily runoff. However, the models have relatively low R#super[2] values and, in most cases, large mean absolute percentage error (MAPE) values between predictions and actual data. Nevertheless, the R#super[2] values of linear models on Gabor-transformed data are higher than those of linear models on raw data. In addition, the large errors are generally due to the model underpredicting extreme peaks and troughs in the real data. A linear model on one frequency column of a Gabor-transform would not be able to predict stream flows at other frequencies, but it does offer an interpretable model to understand amplitudes of seasonal or other periodic flows as a function of precipitation, temperature and fractional impervious area.
 
  == Multiple Linear Regression Model with Principal Component Analysis
+
+The model was developed for the Suwanee Creek at Suwanee gage (USGS Gage No. 02334885). The dependent variable is daily runoff depth in millimeters (mm), calculated from daily mean discharge and the watershed drainage area. The record extends from January 3, 1985, to June 10, 2024, and contains 14,404 consecutive days with no missing values. 
+
+For this model, four independent variables were used: (1) one-day precipitation, (2) two-day precipitation, (3) three-day precipitation, and (4) fractional impervious area. One-day precipitation represents watershed-average daily precipitation and was taken from the gridded water balance dataset. The two- and three-day precipitation show the sum of the current day's precipitation and the precipitation from one or two days prior. Meanwhile, the fractional impervious area is the mean fractional impervious area, taken from the land cover dataset.
+
+A principal component analysis (PCA) was applied to transform the independent variables into uncorrelated components before fitting the regression. Every fourth year of the record (1988, 1992, and so on through 2024) was withheld for testing, and the model was trained on the remaining years. This resulted in 10,948 days of training data and 3,456 days of testing data. Withholding every third and fifth year of record was also tested to determine if this sampling methodology is sensitive to the interval chosen. However, this did not significantly improve the regression results, so the middle value was chosen. 
+
+Whole years were withheld instead of random days, since streamflow has a more gradual daily change than a random fluctuation. Streamflow is highly dependent on precipitation and on the rate of drainage through the drainage network within the watershed, which causes flow from a single storm event to extend over several days. Randomly selecting a day may place data from the same storm event in both training and testing data and may cause the model to overperform. Each variable was then normalized to a mean of zero and a standard deviation of one using the normalization function from the lecture. 
+
+The PCA was performed by applying a singular value decomposition to the normalized training data. The loadings of the resulting principal components, which indicate the contribution of each independent variable to each component, are summarized in the table below.
+
+#figure(
+  placement: auto,
+  table(
+    columns: (2fr, 1fr, 1fr, 1fr),
+    align: (left, center, center, center),
+    table.header([*Variable*], [*PC1*], [*PC2*], [*PC3*]),
+    [One-day precipitation], [−0.55], [0.02], [−0.78],
+    [Two-day precipitation], [−0.61], [0.02], [0.13],
+    [Three-day precipitation], [−0.57], [0.01], [0.61],
+    [Fractional impervious area], [−0.03], [−1.00], [−0.01],
+  ),
+  caption: [Principal component loadings for the Suwanee Creek watershed],
+) <pca-loadings>
+
+The loadings show how much each variable contributes to a component, where a value closer to 1 (or -1) indicates a large contribution and a value closer to 0 indicates a small contribution. The first principal component is weighted almost equally on the three precipitation variables and represents the overall amount of recent rainfall. The second component consists almost entirely of the fractional impervious area. The third component contrasts the one-day precipitation with the three-day precipitation and therefore represents the timing of the rainfall, that is, whether the rain fell on the same day or on the preceding days. Each component is a direction through the data, so its sign only indicates which way that direction points and is assigned arbitrarily by the PCA; therefore, this does not affect the results. 
+
+Two models were then fitted to the training data by least squares for comparison. The first uses the four normalized independent variables directly, and the second uses the three retained principal components:
+
+#v(0.6em)
+#align(center)[
+  #set par(justify: false)
+  #set text(hyphenate: false)
+  Runoff = β#sub[1] (One-day precipitation) + β#sub[2] (Two-day precipitation) + β#sub[3] (Three-day precipitation) + β#sub[4] (Fractional impervious area)
+]
+#v(0.6em)
+#align(center)[
+  Runoff = β#sub[1] (PC1) + β#sub[2] (PC2) + β#sub[3] (PC3)
+]
+#v(0.6em)
+
+The coefficient of determination for each model, calculated for both the training and testing data, is summarized in the table below.
+
+#figure(
+  placement: auto,
+  table(
+    columns: (2fr, 1fr, 1fr),
+    align: (left, center, center),
+    table.header([*Model*], [*Daily $R^2$ (train)*], [*Daily $R^2$ (test)*]),
+    [All four variables], [0.56], [0.59],
+    [PCA, three components], [0.52], [0.53],
+  ),
+  caption: [Coefficients of determination for the Suwanee Creek regression models],
+) <pca-r2>
+
+#figure(
+  image("figures/suwanee_regression_daily_all.png", width: 100%),
+  caption: [Predicted vs. Observed Daily Runoff for Suwanee Creek using All Four Variables],
+) <pca-daily-all>
+
+#figure(
+  image("figures/suwanee_regression_daily_pca.png", width: 100%),
+  caption: [Predicted vs. Observed Daily Runoff for Suwanee Creek using Three Principal Components],
+) <pca-daily-pca>
+
+The $R^2$ values from the two models range from 0.52 to 0.59 for daily runoff. The values for the testing data are similar to those for the training data, which indicates that the models are not overfitted to the training years. This is consistent with the water balance regression described above, in which including the previous day produced the largest improvement in the model. In the PCA regression, the timing component (PC3) has the largest coefficient (0.58), followed by the rainfall amount component (PC1, −0.40), which confirms that the delay between rainfall and streamflow is the most important feature captured by the aggregated precipitation variables. 
+
+The PCA regression has a slightly lower $R^2$ for daily runoff than the regression on all four variables (0.53 compared to 0.59 for the testing data), since it uses one fewer input variable. 
+
+The figure below compares observed and predicted daily runoff for the September 2009 storm, which is the same storm shown in the water balance regression section. This period falls within the training years, so the models are expected to perform well in predicting the data. The two models closely follow the smaller rises in runoff before and after the main storm. However, the observed runoff peaked at approximately 66 mm on September 21, whereas the predicted peaks were approximately 24 mm for the regression on all four variables and 21 mm for the PCA regression, and both occurred one day later.
+
+#figure(
+  image("figures/suwanee_pca_sept2009.png", width: 100%),
+  caption: [Observed and predicted daily runoff for Suwanee Creek during September 2009],
+) <pca-sept2009>
+
+Two limitations can be identified: (1) days with low runoff tend to be overpredicted for both models, and (2) days with the highest runoff are underpredicted, as shown by the points falling below the line at high observed runoff, by the points falling above the line at low observed runoff, and by the comparison for the September 2009 storm. Additionally, the coefficient of the fractional impervious area component (PC2) is close to zero (−0.03), which indicates that the linear model does not detect an effect of urbanization on daily runoff at Suwanee Creek, even though the fractional impervious area increased substantially over the period of record. A linear model can only add a fixed amount of runoff for a given level of imperviousness, whereas imperviousness is expected to increase the runoff produced by each unit of rainfall.
+
+==  Decision Tree with Feature Selection and Cross Validation
+
+Two basins were considered for this evaluation: Suwanee Creek (USGS 02334885) and the Chattahoochee River at Helen (USGS 02330450) in the state of Georgia. They are similar in size but differ in land cover and rainfall (@basin-char). Suwanee Creek basin urbanized rapidly from 1985 to 2023, with impervious cover rising from 5.6% to 30%. The Chattahoochee River at Helen basin stayed largely forested, with impervious cover below 1% throughout. Helen is also much wetter, receiving about 1,880 mm of rain a year compared to 1,360 mm/year at Suwanee. The annual rainfall in both basins (calculated as the average of pr_mean (mm/day) over all grid cells in each basin and aggregated annually) move closely together (correlation 0.88), as seen in @1dt_annual_rainfall_correlation.
+
+#figure(
+  table(
+    columns: (2fr, 1fr, 1.5fr),
+    align: (left, center, center),
+    table.header([*Basin Characteristic*], [*Suwanee Creek*], [*Chattahoochee at Helen*]),
+    [Drainage area (sq.mi.)], [47.1], [44.7],
+    [Impervious cover % (1985-2023)], [5.6 to 30], [$<1$],
+    [Annual mean rainfall (mm)], [1,360], [1,880],
+  ),
+  caption: [Selected Basin Characteristics],
+) <basin-char>
+
+#figure(
+  image("figures/Figure1dt_annual_rainfall_correlation.png", width: 100%),
+  caption: [Annual Rainfall of Suwanee and Chatthoochee River at Helen Basins (1985-2023)],
+) <1dt_annual_rainfall_correlation>
+
+=== Feature Selection 
+
+Initial features explored for analysis included daily GridMET climate variables averaged over each basin:  
+
+• precipitation ('pr_mean', 'pr_max', 'pr_min', 'pr_median')
+
+• minimum and maximum temperature ('tmmn_mean', 'tmmx_mean') 
+
+• solar radiation ('srad_mean') 
+
+• vapor pressure deficit ('vpd_mean') 
+
+• rainfall totals over the previous 2, 7 and 30 days ('rain_2day', 'rain_7day', 'rain_30day') 
+
+• flags for more than 1 inch (25.4 mm) of rain on the day or over 2 days ('heavy_rain_daily', 'heavy_rain_2day') 
+
+• the day of the year ('day_of_year') 
+
+• annual fraction impervious ('impervious_pct')
+
+
+Many of these features overlap, so Spearman correlations were plotted (@1dt_spearman_correlation) to remove the features most similar to each other.  
+
+#figure(
+  image("figures/Figure2dt_feature_correlation.png", width: 90%),
+  caption: [Spearman Correlations between Initial Features for Feature Selection],
+  placement: auto,
+  scope: "parent",
+) <1dt_spearman_correlation>
+
+On reviewing the feature correlations, only nine features were selected for further analysis including pr_mean, rain_2day, rain_7day, rain_30day, tmmx_mean, srad_mean, vpd_mean, day_of_year and impervious_pct. Only pr_mean was kept due to high correlations with similar variables. A similar logic was used to keep only tmmx_mean. Features including flags for heavy rain were dropped because the decision tree will find its own cut points. 
+
+=== Model Development
+
+The DecisionTree Julia package was used to develop a decision tree for each basin. The data were separated into training (80%) and testing (20%) sets using a seeded random sample (seed 42) per basin.  
+
+A separate decision tree was developed for each basin using the remaining features, with the target of predicting high-discharge events. Discharge (cfs) is calculated using gage depth (mm/day) and basin area (sq mm). High-discharge events are defined as days when discharge exceeds the 90th percentile of the training data. These thresholds were calculated independently for each watershed (129 cfs at Suwanee and 244 cfs at Helen) because rainfall and flow differ greatly between the two basins.  
+
+A decision tree repeatedly splits the days into two groups using a yes/no question about one feature. Each split is chosen to make the groups as pure as possible, measured by the Gini index (Gini = 1 − Σ pₖ²). A Gini index of 0 means all days in the group are the same kind. Figure @3dt shows an example for ‘rain_2day’. At Suwanee, splitting at about ‘rain2day’ = 24 mm brings the weighted Gini index to about 0.12. At Chatthoochee at Helen, the best ‘rain_2day’ split brings its index to about 0.15.
+
+The number of levels in the tree was decided based on the 5-fold cross-validated F1 score (described under Model Performance) for depths of 1 to 10 (@3dt). Suwanee scores almost as well with a single split (F1 = 0.62) as at its best depth (F1 = 0.63 at four levels), while Helen improves steadily up to about six levels. Four levels were chosen as a balance between the two basins.
+
+The decision trees for Suwanee basin and Chattahoochee by Helen basin are shown in @4dt and @5dt respectively. The predictions for both basins depend mostly on the rain variables. ‘impervious_pct’ shows not to negligible predictive importance for both watersheds, as well as ‘tmmx_mean’, ‘srad_mean’, ‘vpd_mean’ and ‘pr_mean’. This is because land use change is available only on an annual basis, so daily changes in runoff cannot be explained. Additional examination of the impact of landuse may include reviewing yearly runoff ratio (annual runoff depth divided by annual rainfall), analyzing stream flashiness, or looking at other basins.
+
+#figure(
+  placement: top,
+  image("figures/Figure3dt_gini_split_and_tree_depth.png", width: 100%),
+  caption: [(a) Weighted Gini Example and (b) Cross-Validated F1 by Maximum Tree Depth],
+  scope: "parent",
+) <3dt>
+
+#figure(
+  placement: auto,
+  image("figures/Figure4dt_decision_tree_suwanee.png", width: 95%),
+  caption: [Decision tree for Suwanee basin],
+  scope: "parent"
+) <4dt>
+
+#figure(
+  placement: auto,
+  image("figures/Figure5dt_decision_tree_helen.png", width: 95%),
+  caption: [Decision tree for Chattahoochee by Helen basin],
+  scope: "parent"
+) <5dt>
+
+=== Model Performance
+
+To evaluate how well the decision trees predict, four metrics were used: 
+
+• Accuracy, which is the share of all test days predicted correctly. Because only 10% of days are high flow, always predicting "normal" already scores about 90% (the baseline), so accuracy isn’t the best metric to assess performance in this case. 
+
+• Precision, which is ratio of true high flow days to the days predicted as high flow. Low precision indicates a lot of false negatives. 
+
+• Recall, which is ratio of true high flow days to the days that are actually high flow. Low recall indicates a lot of missed events. 
+
+• F1, which is a single score that balances precision and recall (calculated by their harmonic mean); it is high only when both are high. For this study, the F1 score is likely a better performance indicator than accuracy due to the relative rarity of high flow events. 
+
+The performance metrics are listed below.
+ 
+#figure(
+  placement: auto,
+  table(
+    columns: (2fr, 1fr, 1fr, 1fr, 1fr),
+    align: (left, center, center, center, center),
+    table.header([*Basin*], [*Accuracy*], [*Precision*], [*Recall*], [*F1*]),
+    [Suwanee Creek], [92.8%], [71%], [57%], [0.63],
+    [Chattahoochee at Helen], [92.9%], [66%], [47%], [0.55],
+  ),
+  caption: [Decision Tree Performance on Test Set],
+  scope: "parent"
+) <basin-characteristics>
+
+The decision tree models do only moderately better than guessing. They give relatively few false alarms (71% and 66% precisions) but miss a large number of high flow days (57% and 47% recall), especially at Chattahoochee at Helen. The decision tree model does somewhat better on the Suwanee basin than on the Chattahoochee at Helen basin (0.63 vs 0.55 F1s). 
+
+== Comparison of Modeling Approaches
+Comparing the models, similar findings were found for the following: rainfall timing and time lag, effect of urbanization at the daily scale, and high-flow prediction.
+
+The timing of the rainfall is found to be the most important predictor of streamflow. The water balance regression improved the most when the previous day was included; the Gabor transform regression used a two-day precipitation total to account for the one-day lag; the timing component had the largest coefficient in the PCA regression; and the decision trees depended mostly on the rainfall variables. Additionally, considering the runoff from the previous day(s) produced large improvements in the predictions. This is consistent with the observation that the runoff occurs approximately one day after the precipitation due to the time needed for the rainfall to reach the streamgages. 
+
+The effect of urbanization on a daily scale is difficult to detect since land cover data change annually, while runoff data change daily. The coefficient of the fractional impervious area component in the PCA regression was close to zero, and the annual impervious cover data cannot explain daily runoff in the decision trees. However, the Gabor transform regression produced a small positive coefficient for fractional impervious area, due to the effect of impervious surfaces increasing runoff. 
+
+Lastly, high flows are difficult to predict and are largely underpredicted. The water balance and PCA regressions underpredicted the highest runoff days, including the September 2009 storm, and the decision trees missed a large number of high-flow days. In contrast, the model that predicts the smoothed seasonal signal had the highest coefficient of determination, which indicates that the models perform better as the predicted quantity becomes less variable.
 
 /*This project will predict and compare the impacts of climate change versus urbanization on surface runoff and stream flows using the datasets discussed above. Specifically, the project will use singular value decomposition (SVD) and principal component analysis (PCA) to understand the dominant variables determining runoff and stream flows, the degree to which they explain variations in flows (via the singular values), and the relative loadings of climate-related variables compared to urbanization-related variables. Each observation of the data matrix will contain the summarized variables for all watersheds at one point in time, with the total number of observations as a product of the temporal range and the (daily or annual) sample rate. Climate variables may include precipitation, temperature, and number of days with extreme temperatures or precipitation, and urbanization variables may include fractional impervious area and the SCS curve number.
 Multivariate regression will also be used to analyze the strength and confidence of correlations between the climate and the urbanization metrics as independent variables and runoff or stream flow as the dependent variable. The regression optimization model will assume linear relationships for all variables except where theory, industry standards, or analysis results establish a clear nonlinear relationship, such as the relationship between CN and runoff in the SCS equation.
