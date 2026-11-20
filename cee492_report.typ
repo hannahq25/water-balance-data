@@ -44,44 +44,48 @@
 #set math.equation(numbering: none)
 
 // = Background
-= Data Sources <data-sources>
-This project explores a collection of water and climate datasets to evaluate the ability to predict runoff under non-stationary climate and land use environments. In order to evaluate these, the project will combine and synthesize data from the following sources. 
-== Daily Historical Water Balance Dataset (Daily Water Balance):
- The primary model-created dataset used as part of this project is a gridded daily historical water balance dataset covering the continental U.S. (CONUS) @Tercek2023. The dataset was originally developed under the National Park Service Inventory and Monitoring Program and the National Park Service Climate Change Response Program. Version 1.5, the version currently available through the National Aeronautics and Space Administration (NASA), provides daily historic data (1980–2024) on #link("https://search.earthdata.nasa.gov/search?q=C2674700048-LPCLOUD")[NASA's Earthdata database] or an #link("https://npwbanalres.s3.us-west-2.amazonaws.com/index.html")[Amazon S3 bucket]. @HistBalanceData
-/*
-== Future Conditions Water Balance Dataset (Future Water Balance)
- Tercek et al (2023) also used the same model method to project the data under various climate change scenarios and climate change models. These are available as 30-year averages (2040–2069 and 2070–2099, under both Representative Concentration Pathway (RCP) 4.5 and RCP 8.5 #footnote[RCP 4.5 and RCP 8.5 are emissions scenarios with radiative forcing of 4.5 and 8.5 W/m#super[2] in 2100, respectively.]) for an assortment of climate models from a second Amazon S3 bucket @FutureBalanceData. Many references cite a THREDDS server for the water balance data; however, that server is no longer valid.  The dataset also spans CONUS.
-*/
-== GridMET 
- Version 1.5 of the Daily Water Balance dataset was developed using climate data available from Climatology Lab's GridMET dataset@abatzoglou2013 @GridMETwebsite. GridMET is a 4-km gridded daily time series dataset from 1979 through the present for CONUS. It blends the spatial detail of Parameter-elevation Regressions on Independent Slopes Model (PRISM) climate data with the daily timing of National Land Data Assimilation System Phase 2 (NLDAS-2) reanalysis. While the focus and calibration of the dataset is on climate variables such as precipitation and temperature, Climatology Lab also stores terrain data on a similar grid and spatial domain that can be used for modeling purposes. 
-/*
- == Multivariate Adaptive Constructed Analogs (MACA)
- Climatology Lab has also developed downscaled future conditions datasets titled Multivariate Adaptive Constructed Analogs (MACA). The MACA datasets downscale an assortment of climate models under both RCP 4.5 and RCP 8.5 to a 4-km grid for CONUS at a daily time interval.  For this project, the  MACAv2-METDATA dataset was used. The synthesized dataset for this project will be trained on the GridMET data and therefore should minimize biases between the historical and future conditions datasets.  This project utilized only one climate model data available from MACA, CNRM-CM5, due to the significant amount of data available. CNRM-CM5 was chosen as the sample model because it more closely replicates extreme precipitation cycles in the Northeast United States, which typically sees similar weather patterns to the selected study area in Georgia (see @domain-selection). The MACA dataset is available through the Climatology Lab website @MACAwebsite.
+= Introduction <introduction>
+Accurate runoff prediction underpins a wide variety of decisions made within civil infrastructure.  Typically, industry has developed specified solutions depending upon the question being asked.  For example, when determining where to locate buildings, regulations are based on estimating a peak annual flow recurrence interval.  This approach often requires complex statistical evaluations at a regional level of stationary gage datasets.  When evaluating sizing for raw water distribution systems, understanding mean daily flow and low flow statistics is more critical.  Or if determining when to close bridges or evacuate citizens, communities often rely on predictive gages that NOAA is constantly manually updating and modifying during flood events to calibrate to observed conditions.   
 
- == U.S. Climate Resilience Toolkit Climate Explorer (Climate Explorer)
- Climate projections typically utilize an ensemble of datasets, simulations, or models to improve performance and reduce uncertainty. Therefore, the MACA data will be supported by annual ensemble data from Climate Explorer, a tool built by the Environmental Protection Agency (EPA), NASA, National Oceanic and Atmospheric Administration (NOAA), and the US Geological Survey (USGS) and hosted by the National Environmental Modeling and Analysis Center (NEMAC) at the University of North Carolina Asheville. The tool provides historical climate conditions across the US based on observations at weather stations and projected climate conditions based on global climate models for the Coupled Model Intercomparison Project Phase 5 (CMIP5) under RCP 4.5 and RCP 8.5. Annual, locality-specific data can be downloaded through the online Climate Explorer tool @ClimateExplorer. 
-*/
- == Soil Survey Geographic Database (SSURGO) <ssurgo-intro>
-Runoff is impacted not only by climate, but also by soil conditions. Data on soil properties across CONUS are available through the Natural Resources Conservation Service's (NRCS) Soil Survey Geographic Database (SSURGO).  While the dataset has been updated over the years, there is no time dimension to the data, unlike the other datasets discussed above.  The dataset categorizes areas spatially by soil type and provides tables detailing the properties of each soil type. The two primary variables used as part of this project are the Hydrologic Soil Group (HSG) and the Available Water Storage (AWS).  Together, they capture both the rate at which water enters the ground and the total volume the soil can retain before generating runoff.  HSG expresses the soil type as either A, B, C, or D, with A being the most permeable and D being the least permeable.  AWS expresses the amount of water that can be stored for use by plants up to a certain depth in the soil and stores the value in millimeters (mm), typically ranging between 0 and 250 mm.  SSURGO data are available in statewide datasets from the NRCS website @SSURGO. 
+These approaches often rely upon a variety of hydrologic datasets and are either manually intensive, highly subjective, or reliant on stationary datasets that are difficult to obtain in urbanizing communities or increasingly complex to simulate under changing climate conditions.   
 
-== Annual National Land Cover Database Collection 1.2  (NLCD)
- While not utilized in the Daily Water Balance, the other major variable typically used when evaluating infiltration capacity is land use.  Land use data predicts infiltration capacity by identifying: (a) impervious surfaces, where no infiltration is possible, (b) barren land, which has moderate infiltration capacity, and (c) different types of vegetative cover, which have greater capacities to intercept and absorb rainfall. The U.S. Geological Survey (USGS) has classified land cover and surface change characteristics across CONUS by applying geospatial deep learning algorithms to the Landsat satellite imagery record @NLCDUserGuide. The resulting data are available in the Annual NLCD Collection 1.2 on an annual basis, beginning in 1985. The Land Cover Classification and Fractional Impervious Surface products in the dataset are used in this project. The data are available to view and download through multiple platforms, including the Multi-Resolution Land Characteristics (MRLC) Web Viewer @MRLCViewer.
+This project evaluated whether machine learning methods could be used to simplify the runoff prediction process and develop a model that can be used by civil engineers for a variety of uses.  The project evaluated the success of various machine learning approaches in two extremes: one watershed that experienced both significant urbanization as well as another watershed whose land use did not change during the time period.  Both watersheds were impacted by any change in climatic conditions during the study period.  
 
-== USGS Water Data for the Nation (USGS Gage Data)
- While the Daily Water Balance dataset estimates runoff, it is critical to validate the model results against observed runoff.  Observed runoff can be estimated from stream gages.  The USGS collects and distributes stream gage data for gages across CONUS.  Each gage has a unique site number and varying period of record and data collected.  For this project, the daily mean discharge was incorporated as the best dataset to validate the Daily Water Balance runoff estimates.  The USGS maintains a website for each gage and users can obtain data directly through the website or other Application Programming Interfaces (APIs).  
-//  For example, the USGS Gage 02207120, Yellow River at GA 124, Near Lithonia, GA, has daily mean discharge for April 26, 1996 to present @02207120
+Our expected was that urbanization would have the biggest impact on our ability to predict stream flow in the selected watershed in north-metro Atlanta.  This hypothesis was based on past research, which often focuses on land cover as a primary impact in runoff.   
 
- For each gage, the USGS also maintains its spatial watershed boundary in GeoJSON format, which can be accessed through its API @USGSAPI.
+For example, the USGS has developed peak flow regression equations at a regional level. These flows are used to develop development requirements, size DOT bridges among a variety of other uses.   In Georgia, there are two primary current reports for estimating peak streamflow: one for urban streams and another for rural streams.  Both reports determine an applicability boundary at an impervious area percentage of 10 (urban at an impervious percentage greater than 10% and rural if impervious area is less than 10%).   Although impervious area is a big factor in the resulting estimated peak flow, neither report specifically evaluates the impact of climate change (either temperature or precipitation) when estimating a predictive flow.  Instead, datasets are screened for nonstationarity using methods such as the Mann-Kendall approach.  Nonstationary datasets typically cannot be used when developing USGS regression equations. 
 
 = Data Formats and Contents
-Each of the datasets discussed above has a different data format and structure.  The following sections provide a brief overview of the data formats and contents for each dataset.
-== Daily Water Balance 
+To evaluate our hypothesis, we incorporated the following datasets.
 
-The daily water balance data are available in the Network Common Data Form (NetCDF) format. NetCDF files contain variables distributed across common dimensions, and attributes of each variable, which allow a single file to store variables across both spatial and time dimensions.   
+== GridMET
+ The primary climate dataset used was Climatology Lab's GridMET dataset@abatzoglou2013 @GridMETwebsite. GridMET is a 4-km gridded daily time series dataset from 1979 through the present for CONUS. It blends the spatial detail of Parameter-elevation Regressions on Independent Slopes Model (PRISM) climate data with the daily timing of National Land Data Assimilation System Phase 2 (NLDAS-2) reanalysis. While the focus and calibration of the dataset is on climate variables such as precipitation and temperature, Climatology Lab also stores terrain data on a similar grid and spatial domain that can be used for modeling purposes. 
+The GridMET data are available as NetCDF files, usually one file per variable per year, on a regular latitude–longitude grid in geographic coordinate system World Geodetic System 1984 (WGS84). The GridMET dataset spans the years 1979 to the present.
+
+The dataset includes precipitation, daily maximum and minimum temperature, which are the primary climate variables for the project. Other variables, that may be used as part of the project, included in the dataset such as srad, vpd and pdsi. The table below lists the variables used in this project.
+
+#figure(
+  caption: [GridMET Variables],
+  table(
+    columns: (auto, auto, auto),
+    align: (center, left, center),
+  table.header([*Variable*],[*Description*],[*Units*]),
+  [`pr`],[daily accumulated precipitation],[mm/day],
+  [`tmmx`],[daily maximum air temperature],[K],
+  [`tmmn`],[daily minimum air temperature],[K],
+  [`srad`],[Downward surface shortwave solar radiation],[W/m²],
+  [`vpd`],[mean vapor pressure deficit],[kPa],
+  [`pdsi`],[Palmer Drought Severity Index (ten-day severity indicator)],[none],
+  )
+)
+== Daily Historical Water Balance Dataset (Daily Water Balance)
+ A previously-created dataset used as part of this project is a gridded daily historical water balance dataset covering the continental U.S. (CONUS) @Tercek2023. The dataset was originally developed under the National Park Service Inventory and Monitoring Program and the National Park Service Climate Change Response Program. Version 1.5, the version currently available through the National Aeronautics and Space Administration (NASA), provides daily historic data (1980–2024) on #link("https://search.earthdata.nasa.gov/search?q=C2674700048-LPCLOUD")[NASA's Earthdata database] or an #link("https://npwbanalres.s3.us-west-2.amazonaws.com/index.html")[Amazon S3 bucket]. @HistBalanceData
+
+ The daily water balance data are available in the Network Common Data Form (NetCDF) format. NetCDF files contain variables distributed across common dimensions, and attributes of each variable, which allow a single file to store variables across both spatial and time dimensions.   
 
 The data are gridded over the entire continental U.S. in 1 kilometer (km) cells, stored in daily time steps (`time` variable). This is projected in a Lambert Conformal Conic (LCC) projection, and each cell has an LCC `x` and `y` coordinate.  The degree latitude/longitude is also stored as variables across the `x`/`y` dimensions. 
 
-Version 1.5 of the water balance dataset was developed from daily meteorological data from GridMET: daily minimum and maximum temperature, and daily precipitation. The model treats the soil as a "bucket" with a maximum capacity based on the SSURGO soil database "Available Water Storage" parameter. Precipitation is classified as rain or snow based on temperature, adjusted for relative humidity @jennings2018. Potential evapotranspiration is calculated with the Oudin method, which uses temperature and latitude-based solar radiation @oudin2005. 
+Version 1.5 of the water balance dataset, used in this project, was developed from daily meteorological data from GridMET: daily minimum and maximum temperature, and daily precipitation. The model treats the soil as a "bucket" with a maximum capacity based on the SSURGO soil database Available Water Storage (AWS) parameter. Precipitation is classified as rain or snow based on temperature, adjusted for relative humidity @jennings2018. Potential evapotranspiration is calculated with the Oudin method, which uses temperature and latitude-based solar radiation @oudin2005. 
 
 #figure(
   caption: [Historical Water Balance Variables],
@@ -104,104 +108,19 @@ Version 1.5 of the water balance dataset was developed from daily meteorological
     `deficit`, "Difference between "+`pet`+" and "+ `aet`+". Greater than zero when climate and vegetation could support more evaporation and transpiration than the soil can supply; otherwise 0.", "mm/day", "Daily"
   ),
 )
-/*
-== Future Water Balance
-The future water balance data are available as Georeferenced Tagged Image File Format (GeoTIFF) files summarized as the 30-year means. A GeoTIFF file embeds georeferencing information within a TIFF image file. Each GeoTIFF represents a separate variable, similar to the variables in the historic dataset (rain, runoff, pet, etc.), and each pixel of the GeoTIFF stores a value for the variable for a particular georeferenced location. 
-*/
-== GridMET
-The GridMET data are available as NetCDF files, usually one file per variable per year, on a regular latitude–longitude grid in geographic coordinate system World Geodetic System 1984 (WGS84). The GridMET dataset spans the years 1979 to the present.
-// This is also available through Google Earth Engine. Gridded daily time series covering the contiguous US from 1979 to the present, at about 4 km resolution (1/24°). It blends the spatial detail of Parameter-elevation Regressions on Independent Slopes Model (PRISM) climate data with the daily timing of National Land Data Assimilation System Phase 2 (NLDAS-2) reanalysis.
 
-The dataset includes precipitation, daily maximum and minimum temperature, which are the primary climate variables for the project. Other variables, that may be used as part of the project, included in the dataset such as srad, vpd and pdsi. The table below lists the variables used in this project.
+== Soil Survey Geographic Database (SSURGO) <ssurgo-intro>
+Runoff is impacted not only by climate, but also by soil conditions. Data on soil properties across CONUS are available through the Natural Resources Conservation Service's (NRCS) Soil Survey Geographic Database (SSURGO).  While the dataset has been updated over the years, there is no time dimension to the data, unlike the other datasets discussed above.  The dataset categorizes areas spatially by soil type and provides tables detailing the properties of each soil type. The two primary variables used as part of this project are the Hydrologic Soil Group (HSG) and the AWS.  Together, they capture both the rate at which water enters the ground and the total volume the soil can retain before generating runoff.  HSG expresses the soil type as either A, B, C, or D, with A being the most permeable and D being the least permeable.  AWS expresses the amount of water that can be stored for use by plants up to a certain depth in the soil and stores the value in millimeters (mm), typically ranging between 0 and 250 mm.  SSURGO data are available in statewide datasets from the NRCS website @SSURGO. 
 
-#figure(
-  caption: [GridMET Variables],
-  table(
-    columns: (auto, auto, auto),
-    align: (center, left, center),
-  table.header([*Variable*],[*Description*],[*Units*]),
-  [`pr`],[daily accumulated precipitation],[mm/day],
-  [`tmmx`],[daily maximum air temperature],[K],
-  [`tmmn`],[daily minimum air temperature],[K],
-  [`srad`],[Downward surface shortwave solar radiation],[W/m²],
-  [`vpd`],[mean vapor pressure deficit],[kPa],
-  [`pdsi`],[Palmer Drought Severity Index (ten-day severity indicator)],[none],
-  )
-)
-/*
-== MACA
-The MACA dataset is also available as NetCDF files and was downloaded as one NetCDF file per model, per scenario, per variable.  As discussed in @data-sources, only one climate model (CNRM-CM5) was used for both RCP 4.5 and RCP 8.5 scenarios.  The variables used in this project are precipitation (`pr`, in mm), daily maximum and minimum temperature (`tmmx`, `tmmn`, in Kelvin).
-
-Each variable/model pairing was analyzed in three  different scenarios: historical (1950-2005), RCP 4.5 (2006-2100), and RCP 8.5 (2006-2100).  
-
-The MACA data are available in a roughly 4km grid spacing, similar to the GridMET data.  However, because it is stored in latitude/longitude, the grids are not uniform in size across CONUS.  The dataset is in the geographic coordinate system  WGS84.
-
-== Climate Explorer 
-The Climate Explorer tracks the following variables: 
-
-#figure(
-  caption: [Climate Explorer Variables],
-  table(
-    columns: (auto, auto, auto),
-    align: (center, left, center),
-  table.header([*Variable*],[*Description*],[*Units*]),
-  [`year`],[years from 1950-2013],[years],
-  [`tmax`],[mean daily maximum temperature],[°C],
-  [`tmin`],[mean daily minimum temperature],[°C],
-  [`days_tmax_gt_100f`],[days with maximum temperatures above 100°F],[days],
-  [`days_tmin_lt_32f`],[days with minimum temps below 0.0°C],[days],
-  [`pcpn`],[precipitation],[in],
-  [`days_pcpn_gt_1in`],[days with more than 1 inch of rain],[days],
-  [`days_dry_days`],[days per year with no measurable rain],[days],
-  [`hdd_65f`],[heating degree days],[°F-days],
-  [`cdd_65f`],[cooling degree days],[°F-days],
-  [`gdd`],[growing degree days],[°F-days],
-  [`gddmod`],[modified growing degree days = growing - degree days minus degree-days over 86°F],[°F-days],
-  )
-)
-
-For each variable, CSV files may be downloaded containing the following: 
-\ \
-1. Modeled History: annual projections generated for the past from global climate models for each variable in the Observations
-
-#figure(
-  caption: [Climate Explorer Modeled History Columns],
-  table(
-    columns: (auto, auto, auto),
-    align: (center, left, center),
-  table.header([*Column*],[*Description*],[*Units*]),
-  [`weighted_mean`],[weighted mean #footnote[Weighted means were computed per Climate Science Special Report: Fourth National Climate Assessment, Volume I, Appendix B]<fn-weightedmean>],[variable dependent],
-  [`min`],[mean daily maximum temperature],[variable dependent],
-  [`max`],[mean daily minimum temperature],[variable dependent],
-  )
-)
-
-2. Projections: annual projections generated for the future from global climate models for each variable in the Observations 
-
-#figure(
-  caption: [Climate Explorer Projections Columns],
-  table(
-    columns: (auto, auto, auto),
-    align: (center, left, center),
-  table.header([*Column*],[*Description*],[*Units*]),
-  [`rcp45_weighted_mean`],[weighted mean@fn-weightedmean for RCP 4.5],[variable dependent],
-  [`rcp45_min `],[minimum for RCP 4.5],[variable dependent],
-  [`rcp45_max`],[maximum for RCP 4.5],[variable dependent],
-  [`rcp85_weighted_mean`],[weighted mean@fn-weightedmean for RCP 8.5],[variable dependent],
-  [`rcp85_min `],[minimum for RCP 8.5],[variable dependent],
-  [`rcp85_max`],[maximum for RCP 8.5],[variable dependent],
-  )
-)
-*/
-== SSURGO
 The SSURGO dataset, accessed as a statewide database for Georgia as part of this project, is available in two parts:
 (1) a GeoTIFF file defining the soil type using a map unit key (`mukey`) for each grid cell, and 
 (2) the tabular data describing the various soil properties for each `mukey`. Each table for the state of Georgia was included in a geopackage (gpkg) database file. For this project, the key table is the Map Unit Aggregated Attribute (`muaggatt`) table, which stores the hydrologic soil group per map unit (`hydgrpdcd`) and the AWS capacity (`aws150`). Both of these variables are used to calculate the infiltration capacity of the soil. 
-// Although the data was collected and updated over time, the only available dataset the most recently collected soil conditions and therefore there is no time dimension to this data source.  
 
 The GeoTIFF used for this project was in a 10m resolution in the European Petroleum Survey Group (EPSG) projection number 5070, also known as the NAD83 / Conus Albers projection. 
 
-== NLCD
+== Annual National Land Cover Database Collection 1.2  (NLCD)
+ While not utilized in the Daily Water Balance, the other major variable typically used when evaluating infiltration capacity is land use.  Land use data predicts infiltration capacity by identifying: (a) impervious surfaces, where no infiltration is possible, (b) barren land, which has moderate infiltration capacity, and (c) different types of vegetative cover, which have greater capacities to intercept and absorb rainfall. The U.S. Geological Survey (USGS) has classified land cover and surface change characteristics across CONUS by applying geospatial deep learning algorithms to the Landsat satellite imagery record @NLCDUserGuide. The resulting data are available in the Annual NLCD Collection 1.2 on an annual basis, beginning in 1985. The Land Cover Classification and Fractional Impervious Surface products in the dataset are used in this project. The data are available to view and download through multiple platforms, including the Multi-Resolution Land Characteristics (MRLC) Web Viewer @MRLCViewer.
+
 The NLCD data are provided as Cloud-Optimized GeoTIFF (COG) files. Each GeoTIFF image corresponds to a year and a land cover variable. @nlcd-legend shows the legend for Land Cover values according to the Annual NLCD Collection 1 Science Product User Guide @NLCDUserGuide.
 
 #figure(
@@ -224,10 +143,13 @@ The NLCD data are provided as Cloud-Optimized GeoTIFF (COG) files. Each GeoTIFF 
 
 The data values for Fractional Impervious Area range from 0-100, representing the percentage of a 30-meter pixel that is covered with impervious surfaces. 
 
-== USGS Gage Data
+== USGS Water Data for the Nation (USGS Gage Data)
+While the Daily Water Balance dataset estimates runoff, it is critical to validate the model results against observed runoff.  Observed runoff can be estimated from stream gages.  The USGS collects and distributes stream gage data for gages across CONUS.  Each gage has a unique site number and varying period of record and data collected.  For this project, the daily mean discharge was incorporated as the best dataset to validate the Daily Water Balance runoff estimates.  The USGS maintains a website for each gage and users can obtain data directly through the website or other Application Programming Interfaces (APIs).  
+
+For each gage, the USGS also maintains its spatial watershed boundary in GeoJSON format, which can be accessed through its API @USGSAPI.
 The Water Data for the Nation dataset is a tabular time series, downloadable as CSV, tab-delimited text, or JSON. This can be obtained from the Water Data for the Nation website or programmatically with the USGS `dataretrieval` Python package. The dataset provides point data measured at one gage location as a daily time series, with many gages having records going back decades. 
 
-Each gage has a site number and metadata including location and drainage area. Data are organized by parameter code: discharge is `00060`, in cubic feet per second, and daily mean values use statistic code `00003`. Each value carries a qualification code: `A` (approved, reviewed by USGS), `P` (provisional, may be revised), or `e` (estimated). Recent data are often still provisional, so the analysis should mainly use approved values. 
+Each gage has a site number and metadata including location and drainage area. Data are organized by parameter code: discharge is `00060`, in cubic feet per second, and daily mean values use statistic code `00003`. Each value carries a qualification code: `A` (approved, reviewed by USGS), `P` (provisional, may be revised), or `e` (estimated). Recent data are often still provisional, so we will only incorproate approved values. 
 
 = Selecting a Study Area and Time Period <domain-selection>
 Gwinnett County, GA was chosen as the focus area due to its rapid urbanization within the past several decades. For consistency and simplicity, all gridded variables were summarized by watershed for 15 gaged watersheds within Gwinnett County as shown in @locationmap.  Stream gage data was only evaluated for 14 of the 15 watershed because there was limited data avaiable during the time period considered with this project.
