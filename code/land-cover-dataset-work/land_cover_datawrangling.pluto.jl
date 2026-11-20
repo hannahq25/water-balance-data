@@ -48,6 +48,9 @@ USGS_Gages = ["02205000", #Wildcat Creek near Lawrenceville, Ga. (1.29 SQMI)
 			"02335350", #Crooked Creek near Norcross, Ga. (8.87)
 			"02336030"] #North Fork Peachtree Creek at Graves Rd (1.53)
 
+# ╔═╡ b1677e39-1f36-4336-90cf-747566311491
+Gage_helen = "02330450" #Chattahoochee River at Helen
+
 # ╔═╡ 50240bdf-d969-4fee-944c-56e5c923a5dd
 #Define Info about Input Files
 begin
@@ -107,7 +110,6 @@ begin
 	end
 
 	ssurgo_ext = Extent(x=(0, 0), y=(0, 0))
-	#min_x, max_x, min_y, max_y = -2.06025f6, 2.63875f6, -1.915f6, 1.384f6
 	gage_basins_ssurgo = Dict{}()
 	for g in USGS_Gages
 		g_geom = GeoJSON.read(pull_watershed(g)).features[1].geometry[1]
@@ -116,6 +118,13 @@ begin
 		global ssurgo_ext = GeoInterface.Extents.union(
 			ssurgo_ext, GeoInterface.extent(gage_basins_ssurgo[g]))
 	end
+
+	g_geom_helen = GeoJSON.read(pull_watershed(Gage_helen)).features[1].geometry[1]
+	projected_xys_helen = [wgs_2_albersproj(x,y) for (x, y) in g_geom_helen]
+	gage_basin_helen = GeoInterface.Polygon([projected_xys_helen], crs=nlcd_crs)
+	gage_basin_ssurgo_helen = GeoInterface.Polygon([projected_xys_helen], crs=albers_crs)
+	ext_helen = GeoInterface.extent(gage_basin_helen)
+	ssurgo_ext_helen = GeoInterface.extent(gage_basin_ssurgo_helen)
 end
 
 # ╔═╡ a2624ecf-c294-45cf-bd78-3c1fecb3a443
@@ -134,6 +143,10 @@ begin
 	sample_tiff = Raster(sample_path, lazy=true, missingval=NaN)
     sample_clipped_ras = crop(sample_tiff; to=ext)
 	maras= mask(sample_clipped_ras; with=boolmask(gage_basins["02207120"], to=sample_clipped_ras))
+
+    sample_path_helen = "../../hq-data/NLCD_Helen/Annual_NLCD_FctImp_1985_CU_C1V2_d7d2d565-c7a7-46fe-84bc-aad4518f115a.tiff"
+	sample_tiff_helen = Raster(sample_path_helen, lazy=true, missingval=NaN)
+    sample_clipped_ras_helen = crop(sample_tiff_helen; to=ext_helen)
 end
 
 # ╔═╡ 53932678-912a-4521-8629-923a8c9b0b46
@@ -158,6 +171,7 @@ begin
     ssurgo_tiff_path = "../../hq-data/gSSURGO/SQLite_SSURGO_GA/muraster_10m_GA.tif"
 	ssurgo_tiff = Raster(ssurgo_tiff_path, lazy=true, missingval=-9999) # raster of map unit keys
 	ssurgo_clipped_ras = crop(ssurgo_tiff; to=ssurgo_ext)
+	ssurgo_clipped_ras_helen = crop(ssurgo_tiff; to=ssurgo_ext_helen)
 
 	ssurgo_gpkg_path = "../../hq-data/gSSURGO/SQLite_SSURGO_GA/SQLite_SSURGO_GA.gpkg"
 	df_muaggatt = 
@@ -167,7 +181,10 @@ begin
 	### Hydrologic Group - Dominant Conditions
     d_hg = Dict(zip(mukeys, df_muaggatt.hydgrpdcd)) # dict of map unit keys to HSG strings
     ras_hg = singleHSG.(get.(Ref(d_hg), ssurgo_clipped_ras, "missing")) # raster of HSG numbers
-    ras_hg_30m = resample(aggregate(meanHSG, ras_hg, (Y(3), X(3))), to=sample_clipped_ras)
+	ras_hg_helen = singleHSG.(get.(Ref(d_hg), ssurgo_clipped_ras_helen, "missing")) # raster of HSG numbers
+   
+	ras_hg_30m = resample(aggregate(meanHSG, ras_hg, (Y(3), X(3))), to=sample_clipped_ras)
+    ras_hg_30m_helen = resample(aggregate(meanHSG, ras_hg_helen, (Y(3), X(3))), to=sample_clipped_ras_helen)
 end
 
 # ╔═╡ 490a764e-cc02-44ea-9a82-41947eac5f4a
@@ -185,9 +202,19 @@ md"""
 Each will be clipped to county bounding box
 """
 
+# ╔═╡ 32b3cd7e-d6e4-4f6a-95a9-7acbf5fd82be
+years = collect(1985:2025)
+
 # ╔═╡ 0f2455aa-0bbe-4454-9542-34ec8e527a72
 function get_raster(v, y)
 	link = "../../hq-data/NLCD/Annual_NLCD_$(v)_$(y)_CU_C1V2_ef5fc425-51d8-47d2-a7d5-30b0a408bf51.tiff" 
+	ras = Raster(link, lazy=true)
+	return ras
+end
+
+# ╔═╡ 3f89c07e-67cc-4802-ae99-5b4563d811ae
+function get_raster_helen(v, y)
+	link = "../../hq-data/NLCD_Helen/Annual_NLCD_$(v)_$(y)_CU_C1V2_d7d2d565-c7a7-46fe-84bc-aad4518f115a.tiff" 
 	ras = Raster(link, lazy=true)
 	return ras
 end
@@ -204,8 +231,6 @@ The data is provided and will be stored as percentage (0-100) of impervious area
 
 # ╔═╡ 0fab2640-4e85-445f-bc77-dd55e0d5552c
 begin
-	years = collect(1985:2025)
-	
 	fctimp_data = DataFrame(
 		variable  = String[],
 		year = Int16[],
@@ -242,7 +267,7 @@ begin
 end
 
 # ╔═╡ 28dc13f1-edc7-44cc-960a-b963f8712975
-fctimp_working = copy(fctimp_data);
+fctimp_data
 
 # ╔═╡ 82f0a45e-252a-4538-847f-4fc7bd391e21
 #VSCODE-MARKDOWN
@@ -275,15 +300,6 @@ end
 
 # ╔═╡ adc68b46-8d07-4790-b9b9-46e175648ed6
 begin	
-	lc_dict = Dict(11 => "OpenWater", 12 => "PerennialIce/Snow",
-		21 => "DevelopedOpenSpace", 22 => "DevelopedLowIntensity", 
-		23 => "DevelopedMediumIntensity", 24 => "DevelopedHighIntensity",
-		31 => "BarrenLand", 41 => "DeciduousForest", 
-		42 => "EvergreenForest", 43 => "MixedForest",
-		52 => "Shrub/Scrub", 71 => "Grassland/Herbaceous",
-		81 => "Pasture/Hay", 82 => "CultivatedCrops",
-		90 => "WoodyWetlands", 95 => "EmergentHerbacousWetlands")
-	
 	lndcov_data = DataFrame(
 		variable  = String[],
 		year = Int16[],
@@ -342,36 +358,107 @@ begin
 	end 
 end
 
-# ╔═╡ 4d563163-4bb0-4b01-a747-cd65db5bbd8e
-lndcov_working = copy(lndcov_data);
-
 # ╔═╡ f90cbd93-6846-48cd-9c6d-69447c6d5e2c
 lndcov_gb = groupby(lndcov_data, :variable);
 
+# ╔═╡ 7046ce5f-45bc-4a6a-a0e4-5d295770eb1e
+#VSCODE-MARKDOWN
+md"""
+##### Chattahoochee River at Helen
+"""
+
+# ╔═╡ 4d563163-4bb0-4b01-a747-cd65db5bbd8e
+begin	
+	lndcov_data_helen = DataFrame(
+		variable  = String[],
+		year = Int16[],
+		gage = String[],
+		percent = Float16[])
+
+	cn_data_helen = DataFrame(
+		variable  = String[],
+		year = Int16[],
+		gage = String[],
+		CN_mean = Int8[],
+		CN_maximum = Int8[],
+		CN_minimum = Int8[],
+		CN_median = Int8[]
+	)
+	
+    #get a sample raster to compare stats to to make sure everything matches before clipping/combining
+	sample_ras_lndcov_helen = get_raster_helen("LndCov", years[1])
+	
+	for y in years
+		ras = get_raster_helen("LndCov", y)
+		if check_match(sample_ras_lndcov_helen, ras)
+			lc_ras = crop(ras; to=ext_helen)
+			
+			cn_ras = passmissing(CN).(lc_ras, ras_hg_30m_helen)
+			
+			new_cn_row = (
+				variable = "CN",
+				year = y,
+				gage = Gage_helen,
+				CN_mean = round(Int, mean(skipmissing(cn_ras))),
+				CN_maximum = maximum(skipmissing(cn_ras)),
+				CN_minimum = minimum(skipmissing(cn_ras)),
+				CN_median = median(skipmissing(cn_ras)))
+			push!(cn_data_helen, new_cn_row)
+
+			for (lckey, lcvalue) in lc_dict
+				new_lc_row = (
+					variable = lcvalue,
+					year = y,
+					gage = Gage_helen,
+					percent = 100 * count(x -> x == lckey,
+					skipmissing(lc_ras)) / count(!ismissing, lc_ras))
+				push!(lndcov_data_helen, new_lc_row)
+			end
+			
+		else
+			println("didn't match the specs so didn't use for the following:
+					land cover class = $lckey, year = $y")
+		end
+	end 
+end
+
 # ╔═╡ dbd86dd9-4489-4205-bca3-7c31f25ea933
-cn_working = copy(cn_data);
+lndcov_gb_helen = groupby(lndcov_data_helen, :variable);
 
 # ╔═╡ bee0f37a-5f2d-468c-ac53-d1cc68f23a84
 begin
 	dfs = []
-	push!(dfs, select(fctimp_working, Not(:variable)))
-	push!(dfs, select(cn_working, Not(:variable)))
-	for v in unique(lndcov_working.variable)
+	push!(dfs, select(fctimp_data, Not(:variable)))
+	push!(dfs, select(cn_data, Not(:variable)))
+	for v in unique(lndcov_data.variable)
 		df_single = copy(lndcov_gb[(v,)])
 		col_nm = v*"_percent"
 		df_single[!, col_nm] .= df_single[!,"percent"]
 		select!(df_single, Not(:variable, :percent))
 		push!(dfs, df_single)
 	end
-end
 
-# ╔═╡ 521f2dc1-0305-4727-8a1c-c90695a23d23
-df_cleaned = outerjoin(dfs..., on = [:year, :gage]);
+	df_cleaned = outerjoin(dfs..., on = [:year, :gage])
 
-# ╔═╡ e36b7805-0a70-4636-9c8d-39fa202649b8
-begin
 	out_future = "land_cover_annual_with_CN.csv"
 	CSV.write(out_future, df_cleaned)
+end
+
+# ╔═╡ c0f283ef-fa3c-4eb8-8a0d-b2fc3ecc465c
+begin
+	dfs_helen = []
+	push!(dfs_helen, select(cn_data_helen, Not(:variable)))
+	for v in unique(lndcov_data_helen.variable)
+		df_single = copy(lndcov_gb_helen[(v,)])
+		col_nm = v*"_percent"
+		df_single[!, col_nm] .= df_single[!,"percent"]
+		select!(df_single, Not(:variable, :percent))
+		push!(dfs_helen, df_single)
+	end
+    
+	df_cleaned_helen = outerjoin(dfs_helen..., on = [:year, :gage])
+
+	CSV.write("land_cover_annual_Helen.csv", df_cleaned_helen)
 end
 
 # ╔═╡ fefc1e5c-dbce-4d45-b808-023319205849
@@ -403,6 +490,7 @@ end
 # ╠═200dcd95-aea7-434c-876e-9d631c019343
 # ╠═97c7b647-bd18-4122-86fd-9999beb565ea
 # ╠═5cfeddb3-6382-44d7-8a6a-c3e58cccf720
+# ╠═b1677e39-1f36-4336-90cf-747566311491
 # ╠═50240bdf-d969-4fee-944c-56e5c923a5dd
 # ╠═0430f618-31f9-4272-b5f5-6db55be469ac
 # ╠═a978e8b0-cbcc-4c9f-aeb4-7d4f8cdb6055
@@ -413,7 +501,9 @@ end
 # ╠═687fc236-b3f7-4f10-b4c7-8fe7a8011392
 # ╠═490a764e-cc02-44ea-9a82-41947eac5f4a
 # ╠═e545bf96-a175-407d-88bf-43f398f0e3f0
+# ╠═32b3cd7e-d6e4-4f6a-95a9-7acbf5fd82be
 # ╠═0f2455aa-0bbe-4454-9542-34ec8e527a72
+# ╠═3f89c07e-67cc-4802-ae99-5b4563d811ae
 # ╠═6e9c79e8-b0ce-4b7d-a20e-c032f3d95205
 # ╠═cbc703aa-12bc-4b35-8af7-43391613ac9e
 # ╠═0fab2640-4e85-445f-bc77-dd55e0d5552c
@@ -421,12 +511,12 @@ end
 # ╠═82f0a45e-252a-4538-847f-4fc7bd391e21
 # ╠═ecdc797d-9bb3-4c64-8fde-fbc5886f44e1
 # ╠═adc68b46-8d07-4790-b9b9-46e175648ed6
-# ╠═4d563163-4bb0-4b01-a747-cd65db5bbd8e
 # ╠═f90cbd93-6846-48cd-9c6d-69447c6d5e2c
+# ╠═7046ce5f-45bc-4a6a-a0e4-5d295770eb1e
+# ╠═4d563163-4bb0-4b01-a747-cd65db5bbd8e
 # ╠═dbd86dd9-4489-4205-bca3-7c31f25ea933
 # ╠═bee0f37a-5f2d-468c-ac53-d1cc68f23a84
-# ╠═521f2dc1-0305-4727-8a1c-c90695a23d23
-# ╠═e36b7805-0a70-4636-9c8d-39fa202649b8
+# ╠═c0f283ef-fa3c-4eb8-8a0d-b2fc3ecc465c
 # ╠═fefc1e5c-dbce-4d45-b808-023319205849
 # ╠═6316c1c0-9b80-4d5c-9c06-33247e00c3e4
 # ╠═db248c05-40a3-4530-9ba5-b48105693d7d
